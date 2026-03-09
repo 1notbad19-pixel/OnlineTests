@@ -67,7 +67,7 @@ application-*.yml
 ### Kotlin ###
 .kotlin/
 
-### Checkstyle (если генерирует отчеты) ###
+### Checkstyle ###
 checkstyle.xml
 checkstyle-suppressions.xml
 target/checkstyle*.xml

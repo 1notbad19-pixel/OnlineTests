@@ -13,10 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Реализация сервиса для управления тестами.
- * Предоставляет бизнес-логику для работы с тестами.
- */
 @Service
 @RequiredArgsConstructor
 public class QuizServiceImpl implements QuizService {  // <- Теперь QuizService распознается

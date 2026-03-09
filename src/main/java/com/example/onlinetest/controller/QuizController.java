@@ -21,10 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * REST-контроллер для управления тестами.
- * Предоставляет endpoints для создания, получения, обновления и удаления тестов.
- */
 @RestController
 @RequestMapping("/api/quizzes")
 @RequiredArgsConstructor
@@ -32,38 +28,18 @@ public class QuizController {
 
     private final QuizService quizService;
 
-  /**
-   * Создает новый тест.
-   *
-   * @param request данные для создания теста
-   * @return созданный тест с статусом 201 (Created)
-   */
     @PostMapping
   public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
         QuizResponse response = quizService.createQuiz(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-  /**
-   * Получает тест по его идентификатору.
-   *
-   * @param id идентификатор теста
-   * @return найденный тест
-   */
     @GetMapping("/{id}")
   public ResponseEntity<QuizResponse> getQuiz(@PathVariable Long id) {
         QuizResponse response = quizService.getQuiz(id);
         return ResponseEntity.ok(response);
     }
 
-  /**
-   * Получает список тестов с возможностью фильтрации.
-   *
-   * @param category фильтр по категории (необязательный)
-   * @param published фильтр по статусу публикации (необязательный)
-   * @param tag фильтр по тегу (необязательный)
-   * @return отфильтрованный список тестов
-   */
     @GetMapping
   public ResponseEntity<List<QuizResponse>> getQuizzes(
         @RequestParam(required = false) String category,
@@ -73,13 +49,6 @@ public class QuizController {
         return ResponseEntity.ok(responses);
     }
 
-  /**
-   * Обновляет существующий тест.
-   *
-   * @param id идентификатор теста для обновления
-   * @param request новые данные теста
-   * @return обновленный тест
-   */
     @PutMapping("/{id}")
   public ResponseEntity<QuizResponse> updateQuiz(
         @PathVariable Long id,
@@ -88,12 +57,6 @@ public class QuizController {
         return ResponseEntity.ok(response);
     }
 
-  /**
-   * Удаляет тест по его идентификатору.
-   *
-   * @param id идентификатор теста для удаления
-   * @return пустой ответ с статусом 204 (No Content)
-   */
     @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteQuiz(@PathVariable Long id) {
         quizService.deleteQuiz(id);
