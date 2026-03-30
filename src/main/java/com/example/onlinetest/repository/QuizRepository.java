@@ -1,58 +1,34 @@
 package com.example.onlinetest.repository;
 
 import com.example.onlinetest.model.Quiz;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
-public class QuizRepository {
+public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
-    private final Map<Long, Quiz> quizzes = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    List<Quiz> findByCategoryIgnoreCase(String category);
 
-    public Quiz save(Quiz quiz) {
-        if (quiz.getId() == null) {
-            quiz.setId(idGenerator.getAndIncrement());
-        }
-        quizzes.put(quiz.getId(), quiz);
-        return quiz;
-    }
+    List<Quiz> findByIsPublished(Boolean published);
 
-    public Optional<Quiz> findById(Long id) {
-        return Optional.ofNullable(quizzes.get(id));
-    }
+    @Query("SELECT q FROM Quiz q JOIN q.tags t WHERE t = :tag")
+    List<Quiz> findByTag(@Param("tag") String tag);
 
-    public List<Quiz> findAll() {
-        return List.copyOf(quizzes.values());
-    }
+    // Решение проблемы N+1 с помощью EntityGraph
+    @EntityGraph(attributePaths = {"questions", "questions.answers"})
+    @Query("SELECT q FROM Quiz q WHERE q.id = :id")
+    Optional<Quiz> findByIdWithQuestionsAndAnswers(@Param("id") Long id);
 
-    public List<Quiz> findByCategory(String category) {
-        return quizzes.values().stream()
-        .filter(q -> category.equalsIgnoreCase(q.getCategory()))
-        .toList();
-    }
+    // Решение проблемы N+1 с помощью fetch join
+    @Query("SELECT DISTINCT q FROM Quiz q LEFT JOIN FETCH q.questions WHERE q.id = :id")
+    Optional<Quiz> findByIdWithQuestionsFetch(@Param("id") Long id);
 
-    public List<Quiz> findByPublishedStatus(Boolean published) {
-        return quizzes.values().stream()
-        .filter(q -> published.equals(q.getIsPublished()))
-        .toList();
-    }
-
-    public List<Quiz> findByTag(String tag) {
-        return quizzes.values().stream()
-        .filter(q -> q.getTags() != null && q.getTags().contains(tag))
-        .toList();
-    }
-
-    public void deleteById(Long id) {
-        quizzes.remove(id);
-    }
-
-    public boolean existsById(Long id) {
-        return quizzes.containsKey(id);
-    }
+    @EntityGraph(attributePaths = {"questions"})
+    List<Quiz> findAll();
 }

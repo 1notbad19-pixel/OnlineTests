@@ -1,12 +1,11 @@
 package com.example.onlinetest.controller;
 
+import com.example.onlinetest.dto.FullQuizRequest;
 import com.example.onlinetest.dto.QuizRequest;
 import com.example.onlinetest.dto.QuizResponse;
 import com.example.onlinetest.service.QuizService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,9 +33,27 @@ public class QuizController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/full")
+  public ResponseEntity<QuizResponse> createFullQuiz(@Valid @RequestBody FullQuizRequest request) {
+        QuizResponse response = quizService.createFullQuiz(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/full/without-transaction")
+  public ResponseEntity<QuizResponse> createFullQuizWithoutTransaction(@Valid @RequestBody FullQuizRequest request) {
+        QuizResponse response = quizService.createFullQuizWithoutTransaction(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @GetMapping("/{id}")
   public ResponseEntity<QuizResponse> getQuiz(@PathVariable Long id) {
         QuizResponse response = quizService.getQuiz(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/details")
+  public ResponseEntity<QuizResponse> getQuizWithDetails(@PathVariable Long id) {
+        QuizResponse response = quizService.getQuizWithDetails(id);
         return ResponseEntity.ok(response);
     }
 
