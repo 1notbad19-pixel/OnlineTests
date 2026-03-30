@@ -5,12 +5,10 @@ import com.example.onlinetest.dto.QuizResponse;
 import com.example.onlinetest.model.Quiz;
 import com.example.onlinetest.model.Tag;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class QuizMapper {
@@ -27,7 +25,6 @@ public class QuizMapper {
         quiz.setCreatedAt(LocalDateTime.now());
         quiz.setUpdatedAt(LocalDateTime.now());
 
-        // Обработка тегов
         if (request.tags() != null && !request.tags().isEmpty()) {
             List<Tag> tags = request.tags().stream()
                 .map(tagName -> {
@@ -35,12 +32,11 @@ public class QuizMapper {
                     tag.setName(tagName);
                     return tag;
                 })
-                .collect(Collectors.toList());
-            quiz.setTags(tags);
+                .toList();
+            quiz.setTags(new ArrayList<>(tags));
         } else {
             quiz.setTags(new ArrayList<>());
         }
-
         return quiz;
     }
 
@@ -48,7 +44,6 @@ public class QuizMapper {
         List<String> tagNames = quiz.getTags() != null
             ? quiz.getTags().stream().map(Tag::getName).toList()
             : new ArrayList<>();
-
         return new QuizResponse(
             quiz.getId(),
             quiz.getTitle(),
@@ -75,7 +70,6 @@ public class QuizMapper {
         quiz.setPassingScore(request.passingScore());
         quiz.setUpdatedAt(LocalDateTime.now());
 
-        // Обновляем теги
         if (request.tags() != null) {
             List<Tag> tags = request.tags().stream()
                 .map(tagName -> {
@@ -83,7 +77,7 @@ public class QuizMapper {
                     tag.setName(tagName);
                     return tag;
                 })
-                .collect(Collectors.toList());
+                .toList();
             quiz.getTags().clear();
             quiz.getTags().addAll(tags);
         }

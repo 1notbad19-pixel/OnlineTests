@@ -11,20 +11,20 @@ public class AnswerMapper {
     public Answer toEntity(AnswerRequest request) {
         Answer answer = new Answer();
         answer.setText(request.text());
-        answer.setIsCorrect(request.isCorrect() != null ? request.isCorrect() : false);
+        answer.setIsCorrect(request.isCorrect() != null && request.isCorrect());
         return answer;
     }
 
     public AnswerResponse toResponse(Answer answer) {
         return new AnswerResponse(
-          answer.getId(),
-          answer.getText(),
-          answer.getIsCorrect()
-    );
+            answer.getId(),
+            answer.getText(),
+            answer.getIsCorrect()
+        );
     }
 
     public void update(Answer answer, AnswerRequest request) {
         answer.setText(request.text());
-        answer.setIsCorrect(request.isCorrect() != null ? request.isCorrect() : answer.getIsCorrect());
+        answer.setIsCorrect(request.isCorrect() != null && request.isCorrect());
     }
 }
