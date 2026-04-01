@@ -24,132 +24,132 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizServiceImpl implements QuizService {
 
-  private static final String QUIZ_NOT_FOUND_MSG = "Quiz not found with id: ";
+    private static final String QUIZ_NOT_FOUND_MSG = "Quiz not found with id: ";
 
-  private final QuizRepository quizRepository;
-  private final TagRepository tagRepository;
-  private final QuizMapper quizMapper;
-  private final QuestionMapper questionMapper;
+    private final QuizRepository quizRepository;
+    private final TagRepository tagRepository;
+    private final QuizMapper quizMapper;
+    private final QuestionMapper questionMapper;
 
-  @Override
-  @Transactional
+    @Override
+    @Transactional
   public QuizResponse createQuiz(QuizRequest request) {
-    Quiz quiz = quizMapper.toEntity(request);
+        Quiz quiz = quizMapper.toEntity(request);
 
-    if (request.tags() != null && !request.tags().isEmpty()) {
-      List<Tag> processedTags = request.tags().stream()
-          .map(tagName -> tagRepository.findByName(tagName)
-              .orElseGet(() -> {
-                Tag newTag = new Tag();
-                newTag.setName(tagName);
-                return tagRepository.save(newTag);
-              }))
-          .toList();
-      quiz.setTags(new ArrayList<>(processedTags));
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            List<Tag> processedTags = request.tags().stream()
+                .map(tagName -> tagRepository.findByName(tagName)
+                      .orElseGet(() -> {
+                          Tag newTag = new Tag();
+                          newTag.setName(tagName);
+                          return tagRepository.save(newTag);
+                      }))
+                .toList();
+            quiz.setTags(new ArrayList<>(processedTags));
+        }
+
+        Quiz savedQuiz = quizRepository.save(quiz);
+        return quizMapper.toResponse(savedQuiz);
     }
 
-    Quiz savedQuiz = quizRepository.save(quiz);
-    return quizMapper.toResponse(savedQuiz);
-  }
-
-  @Override
-  @Transactional
+    @Override
+    @Transactional
   public QuizResponse createFullQuiz(FullQuizRequest request) {
-    Quiz quiz = quizMapper.toEntity(request.quiz());
-    Quiz savedQuiz = quizRepository.save(quiz);
+        Quiz quiz = quizMapper.toEntity(request.quiz());
+        Quiz savedQuiz = quizRepository.save(quiz);
 
-    if (request.questions() != null && !request.questions().isEmpty()) {
-      final Quiz finalQuiz = savedQuiz;
-      List<Question> questions = request.questions().stream()
-          .map(questionMapper::toEntity)
-          .map(question -> {
-            question.setQuiz(finalQuiz);
-            return question;
-          })
-          .toList();
-      savedQuiz.setQuestions(new ArrayList<>(questions));
-      savedQuiz = quizRepository.save(savedQuiz);
+        if (request.questions() != null && !request.questions().isEmpty()) {
+            final Quiz finalQuiz = savedQuiz;
+            List<Question> questions = request.questions().stream()
+                .map(questionMapper::toEntity)
+                .map(question -> {
+                    question.setQuiz(finalQuiz);
+                    return question;
+                })
+                .toList();
+            savedQuiz.setQuestions(new ArrayList<>(questions));
+            savedQuiz = quizRepository.save(savedQuiz);
+        }
+
+        return quizMapper.toResponse(savedQuiz);
     }
 
-    return quizMapper.toResponse(savedQuiz);
-  }
-
-  @Override
+    @Override
   public QuizResponse createFullQuizWithoutTransaction(FullQuizRequest request) {
-    Quiz quiz = quizMapper.toEntity(request.quiz());
-    Quiz savedQuiz = quizRepository.save(quiz);
+        Quiz quiz = quizMapper.toEntity(request.quiz());
+        Quiz savedQuiz = quizRepository.save(quiz);
 
-    if (request.questions() != null && !request.questions().isEmpty()) {
-      final Quiz finalQuiz = savedQuiz;
-      List<Question> questions = request.questions().stream()
-          .map(questionMapper::toEntity)
-          .map(question -> {
-            question.setQuiz(finalQuiz);
-            return question;
-          })
-          .toList();
-      savedQuiz.setQuestions(new ArrayList<>(questions));
+        if (request.questions() != null && !request.questions().isEmpty()) {
+            final Quiz finalQuiz = savedQuiz;
+            List<Question> questions = request.questions().stream()
+                .map(questionMapper::toEntity)
+                .map(question -> {
+                    question.setQuiz(finalQuiz);
+                    return question;
+                })
+                .toList();
+            savedQuiz.setQuestions(new ArrayList<>(questions));
 
-      if (request.questions().size() > 2) {
-        throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
-      }
+            if (request.questions().size() > 2) {
+                throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
+            }
+        }
+
+        return quizMapper.toResponse(savedQuiz);
     }
 
-    return quizMapper.toResponse(savedQuiz);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
-    return quizRepository.findById(id)
+        return quizRepository.findById(id)
         .map(quizMapper::toResponse)
         .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public QuizResponse getQuizWithDetails(Long id) {
-    Quiz quiz = quizRepository.findByIdWithQuestions(id)
-        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-    return quizMapper.toResponse(quiz);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag) {
-    List<Quiz> quizzes;
-
-    if (category != null) {
-      quizzes = quizRepository.findByCategoryIgnoreCase(category);
-    } else if (published != null) {
-      quizzes = quizRepository.findByIsPublished(published);
-    } else if (tag != null) {
-      quizzes = quizRepository.findByTag(tag);
-    } else {
-      quizzes = quizRepository.findAll();
     }
 
-    return quizzes.stream()
+    @Override
+    @Transactional(readOnly = true)
+  public QuizResponse getQuizWithDetails(Long id) {
+        Quiz quiz = quizRepository.findByIdWithQuestions(id)
+            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+        return quizMapper.toResponse(quiz);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+  public List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag) {
+        List<Quiz> quizzes;
+
+        if (category != null) {
+            quizzes = quizRepository.findByCategoryIgnoreCase(category);
+        } else if (published != null) {
+            quizzes = quizRepository.findByIsPublished(published);
+        } else if (tag != null) {
+            quizzes = quizRepository.findByTag(tag);
+        } else {
+            quizzes = quizRepository.findAll();
+        }
+
+        return quizzes.stream()
         .map(quizMapper::toResponse)
         .toList();
-  }
-
-  @Override
-  @Transactional
-  public QuizResponse updateQuiz(Long id, QuizRequest request) {
-    Quiz quiz = quizRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-    quizMapper.update(quiz, request);
-    Quiz updatedQuiz = quizRepository.save(quiz);
-    return quizMapper.toResponse(updatedQuiz);
-  }
-
-  @Override
-  @Transactional
-  public void deleteQuiz(Long id) {
-    if (!quizRepository.existsById(id)) {
-      throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
     }
-    quizRepository.deleteById(id);
-  }
+
+    @Override
+    @Transactional
+  public QuizResponse updateQuiz(Long id, QuizRequest request) {
+        Quiz quiz = quizRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+        quizMapper.update(quiz, request);
+        Quiz updatedQuiz = quizRepository.save(quiz);
+        return quizMapper.toResponse(updatedQuiz);
+    }
+
+    @Override
+    @Transactional
+  public void deleteQuiz(Long id) {
+        if (!quizRepository.existsById(id)) {
+            throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
+        }
+        quizRepository.deleteById(id);
+    }
 }

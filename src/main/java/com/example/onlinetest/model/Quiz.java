@@ -65,7 +65,7 @@ public class Quiz {
     private List<Question> questions = new ArrayList<>();
 
     // Конструкторы
-    public Quiz() {}
+    public Quiz() { }
 
     public Quiz(String title, String description, String category) {
         this.title = title;
@@ -74,39 +74,63 @@ public class Quiz {
     }
 
     // Геттеры и сеттеры
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id; }
+    public void setId(Long id) {
+        this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getTitle() {
+        return title; }
+    public void setTitle(String title) {
+        this.title = title; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescription() {
+        return description; }
+    public void setDescription(String description) {
+        this.description = description; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getCategory() {
+        return category; }
+    public void setCategory(String category) {
+        this.category = category; }
 
-    public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
-    public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
+    public Integer getTimeLimitMinutes() {
+        return timeLimitMinutes; }
+    public void setTimeLimitMinutes(Integer timeLimitMinutes) {
+        this.timeLimitMinutes = timeLimitMinutes; }
 
-    public Integer getMaxAttempts() { return maxAttempts; }
-    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
+    public Integer getMaxAttempts() {
+        return maxAttempts; }
+    public void setMaxAttempts(Integer maxAttempts) {
+        this.maxAttempts = maxAttempts; }
 
-    public Boolean getIsPublished() { return isPublished; }
-    public void setIsPublished(Boolean isPublished) { this.isPublished = isPublished; }
+    public Boolean getIsPublished() {
+        return isPublished; }
+    public void setIsPublished(Boolean isPublished) {
+        this.isPublished = isPublished; }
 
-    public Integer getPassingScore() { return passingScore; }
-    public void setPassingScore(Integer passingScore) { this.passingScore = passingScore; }
+    public Integer getPassingScore() {
+        return passingScore; }
+    public void setPassingScore(Integer passingScore) {
+        this.passingScore = passingScore; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt; }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt; }
 
-    public List<Tag> getTags() { return tags; }
-    public void setTags(List<Tag> tags) { this.tags = tags; }
+    public List<Tag> getTags() {
+        return tags; }
+    public void setTags(List<Tag> tags) {
+        this.tags = tags; }
 
-    public List<Question> getQuestions() { return questions; }
-    public void setQuestions(List<Question> questions) { this.questions = questions; }
+    public List<Question> getQuestions() {
+        return questions; }
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions; }
 }
