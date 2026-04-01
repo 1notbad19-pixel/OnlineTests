@@ -21,38 +21,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TagController {
 
-  private final TagRepository tagRepository;
-  private final TagMapper tagMapper;
+    private final TagRepository tagRepository;
+    private final TagMapper tagMapper;
 
-  @GetMapping
+    @GetMapping
   public ResponseEntity<List<TagResponse>> getAllTags() {
-    List<TagResponse> responses = tagRepository.findAll().stream()
-        .map(tagMapper::toResponse)
-        .toList();
-    return ResponseEntity.ok(responses);
-  }
+        List<TagResponse> responses = tagRepository.findAll().stream()
+            .map(tagMapper::toResponse)
+            .toList();
+        return ResponseEntity.ok(responses);
+    }
 
-  @GetMapping("/{id}")
+    @GetMapping("/{id}")
   public ResponseEntity<TagResponse> getTagById(@PathVariable Long id) {
-    return tagRepository.findById(id)
+        return tagRepository.findById(id)
         .map(tagMapper::toResponse)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
-  }
-
-  @PostMapping
-  public ResponseEntity<TagResponse> createTag(@RequestBody TagRequest request) {
-    Tag tag = tagMapper.toEntity(request);
-    Tag savedTag = tagRepository.save(tag);
-    return ResponseEntity.ok(tagMapper.toResponse(savedTag));
-  }
-
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
-    if (tagRepository.existsById(id)) {
-      tagRepository.deleteById(id);
-      return ResponseEntity.noContent().build();
     }
-    return ResponseEntity.notFound().build();
-  }
+
+    @PostMapping
+  public ResponseEntity<TagResponse> createTag(@RequestBody TagRequest request) {
+        Tag tag = tagMapper.toEntity(request);
+        Tag savedTag = tagRepository.save(tag);
+        return ResponseEntity.ok(tagMapper.toResponse(savedTag));
+    }
+
+    @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+        if (tagRepository.existsById(id)) {
+            tagRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

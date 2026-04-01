@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -20,15 +19,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q JOIN q.tags t WHERE t = :tag")
     List<Quiz> findByTag(@Param("tag") String tag);
 
-    // Решение проблемы N+1 с помощью EntityGraph
-    @EntityGraph(attributePaths = {"questions", "questions.answers"})
-    @Query("SELECT q FROM Quiz q WHERE q.id = :id")
-    Optional<Quiz> findByIdWithQuestionsAndAnswers(@Param("id") Long id);
-
-    // Решение проблемы N+1 с помощью fetch join
-    @Query("SELECT DISTINCT q FROM Quiz q LEFT JOIN FETCH q.questions WHERE q.id = :id")
-    Optional<Quiz> findByIdWithQuestionsFetch(@Param("id") Long id);
-
     @EntityGraph(attributePaths = {"questions"})
-    List<Quiz> findAll();
+    @Query("SELECT q FROM Quiz q WHERE q.id = :id")
+    Optional<Quiz> findByIdWithQuestions(@Param("id") Long id);
 }

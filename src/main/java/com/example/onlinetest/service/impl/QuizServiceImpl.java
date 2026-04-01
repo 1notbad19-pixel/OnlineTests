@@ -109,7 +109,7 @@ public class QuizServiceImpl implements QuizService {
   @Override
   @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
-    Quiz quiz = quizRepository.findByIdWithQuestionsAndAnswers(id)
+    Quiz quiz = quizRepository.findByIdWithQuestions(id)
         .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
     return quizMapper.toResponse(quiz);
   }

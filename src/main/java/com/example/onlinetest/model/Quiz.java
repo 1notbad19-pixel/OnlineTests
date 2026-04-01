@@ -51,6 +51,7 @@ public class Quiz {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ManyToMany с Tag
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "quiz_tag_mapping",
@@ -59,14 +60,12 @@ public class Quiz {
     )
     private List<Tag> tags = new ArrayList<>();
 
+    // OneToMany с Question
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Question> questions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<QuizAttempt> attempts = new ArrayList<>();
-
-    public Quiz() {
-    }
+    // Конструкторы
+    public Quiz() {}
 
     public Quiz(String title, String description, String category) {
         this.title = title;
@@ -74,120 +73,40 @@ public class Quiz {
         this.category = category;
     }
 
-    // Геттеры
-    public Long getId() {
-        return id;
-    }
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public Integer getTimeLimitMinutes() {
-        return timeLimitMinutes;
-    }
+    public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
+    public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
 
-    public Integer getMaxAttempts() {
-        return maxAttempts;
-    }
+    public Integer getMaxAttempts() { return maxAttempts; }
+    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
 
-    public Boolean getIsPublished() {
-        return isPublished;
-    }
+    public Boolean getIsPublished() { return isPublished; }
+    public void setIsPublished(Boolean isPublished) { this.isPublished = isPublished; }
 
-    public Integer getPassingScore() {
-        return passingScore;
-    }
+    public Integer getPassingScore() { return passingScore; }
+    public void setPassingScore(Integer passingScore) { this.passingScore = passingScore; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public List<Tag> getTags() {
-        return tags;
-    }
+    public List<Tag> getTags() { return tags; }
+    public void setTags(List<Tag> tags) { this.tags = tags; }
 
-    public List<Question> getQuestions() {
-        return questions;
-    }
-
-    public List<QuizAttempt> getAttempts() {
-        return attempts;
-    }
-
-    // Сеттеры
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public void setTimeLimitMinutes(Integer timeLimitMinutes) {
-        this.timeLimitMinutes = timeLimitMinutes;
-    }
-
-    public void setMaxAttempts(Integer maxAttempts) {
-        this.maxAttempts = maxAttempts;
-    }
-
-    public void setIsPublished(Boolean isPublished) {
-        this.isPublished = isPublished;
-    }
-
-    public void setPassingScore(Integer passingScore) {
-        this.passingScore = passingScore;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void setTags(List<Tag> tags) {
-        this.tags = tags;
-    }
-
-    public void setQuestions(List<Question> questions) {
-        this.questions = questions;
-    }
-
-    public void setAttempts(List<QuizAttempt> attempts) {
-        this.attempts = attempts;
-    }
-
-    // Helper методы
-    public void addTag(Tag tag) {
-        tags.add(tag);
-        tag.getQuizzes().add(this);
-    }
-
-    public void removeTag(Tag tag) {
-        tags.remove(tag);
-        tag.getQuizzes().remove(this);
-    }
+    public List<Question> getQuestions() { return questions; }
+    public void setQuestions(List<Question> questions) { this.questions = questions; }
 }
