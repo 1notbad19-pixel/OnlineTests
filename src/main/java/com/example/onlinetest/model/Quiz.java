@@ -10,12 +10,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "quizzes")
 public class Quiz {
@@ -51,7 +58,12 @@ public class Quiz {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ManyToMany с Tag
+    // Связь с User (ManyToOne) - кто создал квиз
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+    // Связь с Tag (ManyToMany)
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "quiz_tag_mapping",
@@ -60,77 +72,7 @@ public class Quiz {
     )
     private List<Tag> tags = new ArrayList<>();
 
-    // OneToMany с Question
+    // Связь с Question (OneToMany)
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Question> questions = new ArrayList<>();
-
-    // Конструкторы
-    public Quiz() { }
-
-    public Quiz(String title, String description, String category) {
-        this.title = title;
-        this.description = description;
-        this.category = category;
-    }
-
-    // Геттеры и сеттеры
-    public Long getId() {
-        return id; }
-    public void setId(Long id) {
-        this.id = id; }
-
-    public String getTitle() {
-        return title; }
-    public void setTitle(String title) {
-        this.title = title; }
-
-    public String getDescription() {
-        return description; }
-    public void setDescription(String description) {
-        this.description = description; }
-
-    public String getCategory() {
-        return category; }
-    public void setCategory(String category) {
-        this.category = category; }
-
-    public Integer getTimeLimitMinutes() {
-        return timeLimitMinutes; }
-    public void setTimeLimitMinutes(Integer timeLimitMinutes) {
-        this.timeLimitMinutes = timeLimitMinutes; }
-
-    public Integer getMaxAttempts() {
-        return maxAttempts; }
-    public void setMaxAttempts(Integer maxAttempts) {
-        this.maxAttempts = maxAttempts; }
-
-    public Boolean getIsPublished() {
-        return isPublished; }
-    public void setIsPublished(Boolean isPublished) {
-        this.isPublished = isPublished; }
-
-    public Integer getPassingScore() {
-        return passingScore; }
-    public void setPassingScore(Integer passingScore) {
-        this.passingScore = passingScore; }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt; }
-
-    public List<Tag> getTags() {
-        return tags; }
-    public void setTags(List<Tag> tags) {
-        this.tags = tags; }
-
-    public List<Question> getQuestions() {
-        return questions; }
-    public void setQuestions(List<Question> questions) {
-        this.questions = questions; }
 }

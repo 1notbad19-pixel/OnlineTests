@@ -1,6 +1,7 @@
 package com.example.onlinetest.service.impl;
 
 import com.example.onlinetest.dto.FullQuizRequest;
+import com.example.onlinetest.dto.QuestionRequest;
 import com.example.onlinetest.dto.QuizRequest;
 import com.example.onlinetest.dto.QuizResponse;
 import com.example.onlinetest.exception.QuizServiceException;
@@ -9,8 +10,10 @@ import com.example.onlinetest.mapper.QuizMapper;
 import com.example.onlinetest.model.Question;
 import com.example.onlinetest.model.Quiz;
 import com.example.onlinetest.model.Tag;
+import com.example.onlinetest.model.User;
 import com.example.onlinetest.repository.QuizRepository;
 import com.example.onlinetest.repository.TagRepository;
+import com.example.onlinetest.repository.UserRepository;
 import com.example.onlinetest.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,24 +29,41 @@ public class QuizServiceImpl implements QuizService {
 
     private static final String QUIZ_NOT_FOUND_MSG = "Quiz not found with id: ";
 
+    private static final String DEFAULT_USERNAME = "admin";
+    private static final String DEFAULT_EMAIL = "admin@example.com";
+    private static final String DEFAULT_PASSWORD = "password";
+
     private final QuizRepository quizRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
     private final QuizMapper quizMapper;
     private final QuestionMapper questionMapper;
+
+    private User getDefaultUser() {
+        return userRepository.findById(1L)
+        .orElseGet(() -> {
+            User newUser = new User();
+            newUser.setUsername(DEFAULT_USERNAME);
+            newUser.setEmail(DEFAULT_EMAIL);
+            newUser.setPassword(DEFAULT_PASSWORD);
+            return userRepository.save(newUser);
+        });
+    }
 
     @Override
     @Transactional
   public QuizResponse createQuiz(QuizRequest request) {
         Quiz quiz = quizMapper.toEntity(request);
+        quiz.setCreatedBy(getDefaultUser());
 
         if (request.tags() != null && !request.tags().isEmpty()) {
             List<Tag> processedTags = request.tags().stream()
                 .map(tagName -> tagRepository.findByName(tagName)
-                      .orElseGet(() -> {
-                          Tag newTag = new Tag();
-                          newTag.setName(tagName);
-                          return tagRepository.save(newTag);
-                      }))
+                .orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagName);
+                    return tagRepository.save(newTag);
+                }))
                 .toList();
             quiz.setTags(new ArrayList<>(processedTags));
         }
@@ -53,21 +73,23 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional
+  @Transactional
   public QuizResponse createFullQuiz(FullQuizRequest request) {
         Quiz quiz = quizMapper.toEntity(request.quiz());
+        quiz.setCreatedBy(getDefaultUser());
         Quiz savedQuiz = quizRepository.save(quiz);
 
         if (request.questions() != null && !request.questions().isEmpty()) {
-            final Quiz finalQuiz = savedQuiz;
-            List<Question> questions = request.questions().stream()
-                .map(questionMapper::toEntity)
-                .map(question -> {
-                    question.setQuiz(finalQuiz);
-                    return question;
-                })
-                .toList();
-            savedQuiz.setQuestions(new ArrayList<>(questions));
+            for (QuestionRequest qReq : request.questions()) {
+                Question question = questionMapper.toEntity(qReq);
+                question.setQuiz(savedQuiz);
+                savedQuiz.getQuestions().add(question);
+            }
+
+            if (request.questions().size() > 2) {
+                throw new QuizServiceException("ROLLBACK: Too many questions! Nothing will be saved.");
+            }
+
             savedQuiz = quizRepository.save(savedQuiz);
         }
 
@@ -77,18 +99,15 @@ public class QuizServiceImpl implements QuizService {
     @Override
   public QuizResponse createFullQuizWithoutTransaction(FullQuizRequest request) {
         Quiz quiz = quizMapper.toEntity(request.quiz());
+        quiz.setCreatedBy(getDefaultUser());
         Quiz savedQuiz = quizRepository.save(quiz);
 
         if (request.questions() != null && !request.questions().isEmpty()) {
-            final Quiz finalQuiz = savedQuiz;
-            List<Question> questions = request.questions().stream()
-                .map(questionMapper::toEntity)
-                .map(question -> {
-                    question.setQuiz(finalQuiz);
-                    return question;
-                })
-                .toList();
-            savedQuiz.setQuestions(new ArrayList<>(questions));
+            for (QuestionRequest qReq : request.questions()) {
+                Question question = questionMapper.toEntity(qReq);
+                question.setQuiz(savedQuiz);
+                savedQuiz.getQuestions().add(question);
+            }
 
             if (request.questions().size() > 2) {
                 throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
@@ -99,7 +118,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
         return quizRepository.findById(id)
         .map(quizMapper::toResponse)
@@ -109,7 +128,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
-        Quiz quiz = quizRepository.findByIdWithQuestions(id)
+        Quiz quiz = quizRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);
     }
