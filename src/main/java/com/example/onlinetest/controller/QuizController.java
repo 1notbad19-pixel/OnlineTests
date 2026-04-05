@@ -6,6 +6,10 @@ import com.example.onlinetest.dto.QuizResponse;
 import com.example.onlinetest.service.QuizService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,58 +29,93 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizController {
 
-    private final QuizService quizService;
+  private final QuizService quizService;
 
-    @PostMapping
+  @PostMapping
   public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
-        QuizResponse response = quizService.createQuiz(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    QuizResponse response = quizService.createQuiz(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
 
-    @PostMapping("/full")
+  @PostMapping("/full")
   public ResponseEntity<QuizResponse> createFullQuiz(@Valid @RequestBody FullQuizRequest request) {
-        QuizResponse response = quizService.createFullQuiz(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    QuizResponse response = quizService.createFullQuiz(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
 
-    @PostMapping("/full/without-transaction")
+  @PostMapping("/full/without-transaction")
   public ResponseEntity<QuizResponse> createFullQuizWithoutTransaction(@Valid @RequestBody FullQuizRequest request) {
-        QuizResponse response = quizService.createFullQuizWithoutTransaction(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    QuizResponse response = quizService.createFullQuizWithoutTransaction(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
 
-    @GetMapping("/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<QuizResponse> getQuiz(@PathVariable Long id) {
-        QuizResponse response = quizService.getQuiz(id);
-        return ResponseEntity.ok(response);
-    }
+    QuizResponse response = quizService.getQuiz(id);
+    return ResponseEntity.ok(response);
+  }
 
-    @GetMapping("/{id}/details")
+  @GetMapping("/{id}/details")
   public ResponseEntity<QuizResponse> getQuizWithDetails(@PathVariable Long id) {
-        QuizResponse response = quizService.getQuizWithDetails(id);
-        return ResponseEntity.ok(response);
-    }
+    QuizResponse response = quizService.getQuizWithDetails(id);
+    return ResponseEntity.ok(response);
+  }
 
-    @GetMapping
+  @GetMapping
   public ResponseEntity<List<QuizResponse>> getQuizzes(
-        @RequestParam(required = false) String category,
-        @RequestParam(required = false) Boolean published,
-        @RequestParam(required = false) String tag) {
-        List<QuizResponse> responses = quizService.getAllQuizzes(category, published, tag);
-        return ResponseEntity.ok(responses);
-    }
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) Boolean published,
+      @RequestParam(required = false) String tag) {
+    List<QuizResponse> responses = quizService.getAllQuizzes(category, published, tag);
+    return ResponseEntity.ok(responses);
+  }
 
-    @PutMapping("/{id}")
+  // Сложный GET-запрос с фильтрацией и пагинацией (JPQL)
+  @GetMapping("/filter")
+  public ResponseEntity<Page<QuizResponse>> getQuizzesWithFilters(
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) Boolean published,
+      @RequestParam(required = false) Integer minQuestions,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+    Page<QuizResponse> responses = quizService.getQuizzesWithFilters(category, published, minQuestions, pageable);
+    return ResponseEntity.ok(responses);
+  }
+
+  // Native SQL запрос с пагинацией
+  @GetMapping("/filter/native")
+  public ResponseEntity<Page<QuizResponse>> getQuizzesWithFiltersNative(
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) Boolean published,
+      @RequestParam(required = false) Integer minQuestions,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+    Page<QuizResponse> responses = quizService.getQuizzesWithFiltersNative(category, published, minQuestions, pageable);
+    return ResponseEntity.ok(responses);
+  }
+
+  // Инвалидация кэша
+  @DeleteMapping("/cache")
+  public ResponseEntity<String> invalidateCache() {
+    quizService.invalidateCache();
+    return ResponseEntity.ok("Cache invalidated successfully!");
+  }
+
+  @PutMapping("/{id}")
   public ResponseEntity<QuizResponse> updateQuiz(
-        @PathVariable Long id,
-        @Valid @RequestBody QuizRequest request) {
-        QuizResponse response = quizService.updateQuiz(id, request);
-        return ResponseEntity.ok(response);
-    }
+      @PathVariable Long id,
+      @Valid @RequestBody QuizRequest request) {
+    QuizResponse response = quizService.updateQuiz(id, request);
+    return ResponseEntity.ok(response);
+  }
 
-    @DeleteMapping("/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteQuiz(@PathVariable Long id) {
-        quizService.deleteQuiz(id);
-        return ResponseEntity.noContent().build();
-    }
+    quizService.deleteQuiz(id);
+    return ResponseEntity.noContent().build();
+  }
 }

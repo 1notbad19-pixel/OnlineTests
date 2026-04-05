@@ -14,9 +14,12 @@ import com.example.onlinetest.model.User;
 import com.example.onlinetest.repository.QuizRepository;
 import com.example.onlinetest.repository.TagRepository;
 import com.example.onlinetest.repository.UserRepository;
+import com.example.onlinetest.service.QuizCacheService;
 import com.example.onlinetest.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -27,148 +30,204 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizServiceImpl implements QuizService {
 
-    private static final String QUIZ_NOT_FOUND_MSG = "Quiz not found with id: ";
+  private static final String QUIZ_NOT_FOUND_MSG = "Quiz not found with id: ";
+  private static final String DEFAULT_USERNAME = "admin";
+  private static final String DEFAULT_EMAIL = "admin@example.com";
+  private static final String DEFAULT_PASSWORD = "password";
 
-    private static final String DEFAULT_USERNAME = "admin";
-    private static final String DEFAULT_EMAIL = "admin@example.com";
-    private static final String DEFAULT_PASSWORD = "password";
+  private final QuizRepository quizRepository;
+  private final TagRepository tagRepository;
+  private final UserRepository userRepository;
+  private final QuizMapper quizMapper;
+  private final QuestionMapper questionMapper;
+  private final QuizCacheService cacheService;
 
-    private final QuizRepository quizRepository;
-    private final TagRepository tagRepository;
-    private final UserRepository userRepository;
-    private final QuizMapper quizMapper;
-    private final QuestionMapper questionMapper;
-
-    private User getDefaultUser() {
-        return userRepository.findById(1L)
+  private User getDefaultUser() {
+    return userRepository.findById(1L)
         .orElseGet(() -> {
-            User newUser = new User();
-            newUser.setUsername(DEFAULT_USERNAME);
-            newUser.setEmail(DEFAULT_EMAIL);
-            newUser.setPassword(DEFAULT_PASSWORD);
-            return userRepository.save(newUser);
+          User newUser = new User();
+          newUser.setUsername(DEFAULT_USERNAME);
+          newUser.setEmail(DEFAULT_EMAIL);
+          newUser.setPassword(DEFAULT_PASSWORD);
+          return userRepository.save(newUser);
         });
-    }
+  }
 
-    @Override
-    @Transactional
+  @Override
+  @Transactional
   public QuizResponse createQuiz(QuizRequest request) {
-        Quiz quiz = quizMapper.toEntity(request);
-        quiz.setCreatedBy(getDefaultUser());
+    Quiz quiz = quizMapper.toEntity(request);
+    quiz.setCreatedBy(getDefaultUser());
 
-        if (request.tags() != null && !request.tags().isEmpty()) {
-            List<Tag> processedTags = request.tags().stream()
-                .map(tagName -> tagRepository.findByName(tagName)
-                .orElseGet(() -> {
-                    Tag newTag = new Tag();
-                    newTag.setName(tagName);
-                    return tagRepository.save(newTag);
-                }))
-                .toList();
-            quiz.setTags(new ArrayList<>(processedTags));
-        }
-
-        Quiz savedQuiz = quizRepository.save(quiz);
-        return quizMapper.toResponse(savedQuiz);
+    if (request.tags() != null && !request.tags().isEmpty()) {
+      List<Tag> processedTags = request.tags().stream()
+          .map(tagName -> tagRepository.findByName(tagName)
+              .orElseGet(() -> {
+                Tag newTag = new Tag();
+                newTag.setName(tagName);
+                return tagRepository.save(newTag);
+              }))
+          .toList();
+      quiz.setTags(new ArrayList<>(processedTags));
     }
 
-    @Override
+    Quiz savedQuiz = quizRepository.save(quiz);
+    cacheService.invalidate(); // Инвалидация кэша при изменении данных
+    return quizMapper.toResponse(savedQuiz);
+  }
+
+  @Override
   @Transactional
   public QuizResponse createFullQuiz(FullQuizRequest request) {
-        Quiz quiz = quizMapper.toEntity(request.quiz());
-        quiz.setCreatedBy(getDefaultUser());
-        Quiz savedQuiz = quizRepository.save(quiz);
+    Quiz quiz = quizMapper.toEntity(request.quiz());
+    quiz.setCreatedBy(getDefaultUser());
+    Quiz savedQuiz = quizRepository.save(quiz);
 
-        if (request.questions() != null && !request.questions().isEmpty()) {
-            for (QuestionRequest qReq : request.questions()) {
-                Question question = questionMapper.toEntity(qReq);
-                question.setQuiz(savedQuiz);
-                savedQuiz.getQuestions().add(question);
-            }
+    if (request.questions() != null && !request.questions().isEmpty()) {
+      for (QuestionRequest qReq : request.questions()) {
+        Question question = questionMapper.toEntity(qReq);
+        question.setQuiz(savedQuiz);
+        savedQuiz.getQuestions().add(question);
+      }
 
-            if (request.questions().size() > 2) {
-                throw new QuizServiceException("ROLLBACK: Too many questions! Nothing will be saved.");
-            }
+      if (request.questions().size() > 2) {
+        throw new QuizServiceException("ROLLBACK: Too many questions! Nothing will be saved.");
+      }
 
-            savedQuiz = quizRepository.save(savedQuiz);
-        }
-
-        return quizMapper.toResponse(savedQuiz);
+      savedQuiz = quizRepository.save(savedQuiz);
     }
 
-    @Override
+    cacheService.invalidate();
+    return quizMapper.toResponse(savedQuiz);
+  }
+
+  @Override
   public QuizResponse createFullQuizWithoutTransaction(FullQuizRequest request) {
-        Quiz quiz = quizMapper.toEntity(request.quiz());
-        quiz.setCreatedBy(getDefaultUser());
-        Quiz savedQuiz = quizRepository.save(quiz);
+    Quiz quiz = quizMapper.toEntity(request.quiz());
+    quiz.setCreatedBy(getDefaultUser());
+    Quiz savedQuiz = quizRepository.save(quiz);
 
-        if (request.questions() != null && !request.questions().isEmpty()) {
-            for (QuestionRequest qReq : request.questions()) {
-                Question question = questionMapper.toEntity(qReq);
-                question.setQuiz(savedQuiz);
-                savedQuiz.getQuestions().add(question);
-            }
+    if (request.questions() != null && !request.questions().isEmpty()) {
+      for (QuestionRequest qReq : request.questions()) {
+        Question question = questionMapper.toEntity(qReq);
+        question.setQuiz(savedQuiz);
+        savedQuiz.getQuestions().add(question);
+      }
 
-            if (request.questions().size() > 2) {
-                throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
-            }
-        }
-
-        return quizMapper.toResponse(savedQuiz);
+      if (request.questions().size() > 2) {
+        throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
+      }
     }
 
-    @Override
+    cacheService.invalidate();
+    return quizMapper.toResponse(savedQuiz);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
-        return quizRepository.findById(id)
+    return quizRepository.findById(id)
         .map(quizMapper::toResponse)
         .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-    }
+  }
 
-    @Override
-    @Transactional(readOnly = true)
+  @Override
+  @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
-        Quiz quiz = quizRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-        return quizMapper.toResponse(quiz);
+    // Используем обычный findById, но с включенным SQL логированием
+    // Вы увидите в консоли: 1 запрос на квиз + 1 запрос на вопросы + N запросов на ответы
+    Quiz quiz = quizRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+
+    // Для демонстрации решения N+1 используйте отдельный метод с @EntityGraph
+    return quizMapper.toResponse(quiz);
+  }
+
+  // Метод для демонстрации решения N+1 (без дублирования)
+  @Transactional(readOnly = true)
+  public QuizResponse getQuizWithDetailsOptimized(Long id) {
+    // Оптимизированный запрос через JPQL с JOIN FETCH
+    Quiz quiz = quizRepository.findQuizzesWithFilters(null, null, null, null)
+        .stream()
+        .filter(q -> q.getId().equals(id))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+
+    return quizMapper.toResponse(quiz);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag) {
+    List<Quiz> quizzes;
+
+    if (category != null) {
+      quizzes = quizRepository.findByCategoryIgnoreCase(category);
+    } else if (published != null) {
+      quizzes = quizRepository.findByIsPublished(published);
+    } else if (tag != null) {
+      quizzes = quizRepository.findByTag(tag);
+    } else {
+      quizzes = quizRepository.findAll();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-  public List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag) {
-        List<Quiz> quizzes;
-
-        if (category != null) {
-            quizzes = quizRepository.findByCategoryIgnoreCase(category);
-        } else if (published != null) {
-            quizzes = quizRepository.findByIsPublished(published);
-        } else if (tag != null) {
-            quizzes = quizRepository.findByTag(tag);
-        } else {
-            quizzes = quizRepository.findAll();
-        }
-
-        return quizzes.stream()
+    return quizzes.stream()
         .map(quizMapper::toResponse)
         .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published, Integer minQuestions, Pageable pageable) {
+    QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
+        category, published, minQuestions, pageable.getPageNumber(), pageable.getPageSize()
+    );
+
+    @SuppressWarnings("unchecked")
+    Page<QuizResponse> cached = cacheService.get(key);
+    if (cached != null) {
+      log.info("Cache HIT for key: {}", key);
+      return cached;
     }
 
-    @Override
-    @Transactional
+    log.info("Cache MISS for key: {}", key);
+    Page<Quiz> quizPage = quizRepository.findQuizzesWithFilters(category, published, minQuestions, pageable);
+    Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
+
+    cacheService.put(key, responsePage);
+    return responsePage;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published, Integer minQuestions, Pageable pageable) {
+    Page<Quiz> quizPage = quizRepository.findQuizzesWithFiltersNative(category, published, minQuestions, pageable);
+    return quizPage.map(quizMapper::toResponse);
+  }
+
+  @Override
+  @Transactional
   public QuizResponse updateQuiz(Long id, QuizRequest request) {
-        Quiz quiz = quizRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
-        quizMapper.update(quiz, request);
-        Quiz updatedQuiz = quizRepository.save(quiz);
-        return quizMapper.toResponse(updatedQuiz);
-    }
+    Quiz quiz = quizRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+    quizMapper.update(quiz, request);
+    Quiz updatedQuiz = quizRepository.save(quiz);
+    cacheService.invalidate(); // Инвалидация кэша при изменении
+    return quizMapper.toResponse(updatedQuiz);
+  }
 
-    @Override
-    @Transactional
+  @Override
+  @Transactional
   public void deleteQuiz(Long id) {
-        if (!quizRepository.existsById(id)) {
-            throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
-        }
-        quizRepository.deleteById(id);
+    if (!quizRepository.existsById(id)) {
+      throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
     }
+    quizRepository.deleteById(id);
+    cacheService.invalidate(); // Инвалидация кэша при удалении
+  }
+
+  @Override
+  public void invalidateCache() {
+    cacheService.invalidate();
+  }
 }
