@@ -21,10 +21,11 @@ public interface QuizService {
 
     List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag);
 
-    // Новые методы с пагинацией
-    Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published, Integer minQuestions, Pageable pageable);
+    Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published,
+        Integer minQuestions, Pageable pageable);
 
-    Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published, Integer minQuestions, Pageable pageable);
+    Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
+        Integer minQuestions, Pageable pageable);
 
     QuizResponse updateQuiz(Long id, QuizRequest request);
 

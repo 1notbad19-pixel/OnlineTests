@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenAPIConfig {
 
-  @Bean
+    @Bean
   public OpenAPI customOpenAPI() {
-    return new OpenAPI()
+        return new OpenAPI()
         .info(new Info()
             .title("Online Test API")
             .version("1.0")
@@ -19,5 +19,5 @@ public class OpenAPIConfig {
             .contact(new Contact()
                 .name("Developer")
                 .email("dev@example.com")));
-  }
+    }
 }

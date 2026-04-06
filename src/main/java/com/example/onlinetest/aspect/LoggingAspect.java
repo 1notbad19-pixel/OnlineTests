@@ -9,21 +9,17 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @Slf4j
+@SuppressWarnings("unused")
 public class LoggingAspect {
 
-  @Around("execution(* com.example.onlinetest.service.*.*(..))")
+    @Around("execution(* com.example.onlinetest.service.*.*(..))")
   public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-    long start = System.currentTimeMillis();
-
-    String methodName = joinPoint.getSignature().toShortString();
-    log.info("▶️ Starting: {}", methodName);
-
-    Object result = joinPoint.proceed();
-
-    long executionTime = System.currentTimeMillis() - start;
-    log.info("✅ Completed: {} in {} ms", methodName, executionTime);
-
-    return result;
-  }
+        long start = System.currentTimeMillis();
+        String methodName = joinPoint.getSignature().toShortString();
+        log.info("▶️ Starting: {}", methodName);
+        Object result = joinPoint.proceed();
+        long executionTime = System.currentTimeMillis() - start;
+        log.info("✅ Completed: {} in {} ms", methodName, executionTime);
+        return result;
+    }
 }
-
