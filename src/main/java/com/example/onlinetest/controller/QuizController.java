@@ -30,6 +30,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuizController {
 
+    private static final String DELETED_MESSAGE_PREFIX = "Deleted ";
+    private static final String QUIZZES = " quizzes";
+
     private final QuizService quizService;
     private final QuizCacheService cacheService;
 
@@ -120,7 +123,7 @@ public class QuizController {
             return ResponseEntity.notFound().build();
         }
         cacheService.invalidate();
-        return ResponseEntity.ok("Deleted " + count + " quizzes with category: " + category);
+        return ResponseEntity.ok(DELETED_MESSAGE_PREFIX + count + QUIZZES + " with category: " + category);
     }
 
     @DeleteMapping("/published/{published}")
@@ -130,7 +133,7 @@ public class QuizController {
             return ResponseEntity.notFound().build();
         }
         cacheService.invalidate();
-        return ResponseEntity.ok("Deleted " + count + " quizzes with isPublished=" + published);
+        return ResponseEntity.ok(DELETED_MESSAGE_PREFIX + count + QUIZZES + " with isPublished=" + published);
     }
 
     @DeleteMapping("/tag/{tagName}")
@@ -140,7 +143,7 @@ public class QuizController {
             return ResponseEntity.notFound().build();
         }
         cacheService.invalidate();
-        return ResponseEntity.ok("Deleted " + count + " quizzes with tag: " + tagName);
+        return ResponseEntity.ok(DELETED_MESSAGE_PREFIX + count + QUIZZES + " with tag: " + tagName);
     }
 
     @DeleteMapping("/min-questions/{minQuestions}")
@@ -150,14 +153,15 @@ public class QuizController {
             return ResponseEntity.notFound().build();
         }
         cacheService.invalidate();
-        return ResponseEntity.ok("Deleted " + count + " quizzes with less than " + minQuestions + " questions");
+        return ResponseEntity.ok(DELETED_MESSAGE_PREFIX +
+            count + QUIZZES + " with less than " + minQuestions + " questions");
     }
 
     @DeleteMapping("/all")
   public ResponseEntity<String> deleteAllQuizzes() {
         long count = quizService.deleteAllQuizzes();
         cacheService.invalidate();
-        return ResponseEntity.ok("Deleted all " + count + " quizzes");
+        return ResponseEntity.ok(DELETED_MESSAGE_PREFIX + count + QUIZZES + " (all)");
     }
 
     @DeleteMapping("/cache")
