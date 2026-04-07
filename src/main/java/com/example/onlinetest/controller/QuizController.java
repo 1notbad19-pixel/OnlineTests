@@ -3,6 +3,7 @@ package com.example.onlinetest.controller;
 import com.example.onlinetest.dto.FullQuizRequest;
 import com.example.onlinetest.dto.QuizRequest;
 import com.example.onlinetest.dto.QuizResponse;
+import com.example.onlinetest.service.QuizCacheService;
 import com.example.onlinetest.service.QuizService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.List;
 public class QuizController {
 
     private final QuizService quizService;
+    private final QuizCacheService cacheService;
 
     @PostMapping
   public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
@@ -92,32 +94,75 @@ public class QuizController {
         @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<QuizResponse> responses = quizService.getQuizzesWithFiltersNative(
-            category,
-            published,
-            minQuestions,
-            pageable
-        );
+        Page<QuizResponse> responses = quizService.getQuizzesWithFiltersNative(category, published,
+            minQuestions, pageable);
         return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<QuizResponse> updateQuiz(
+        @PathVariable Long id,
+          @Valid @RequestBody QuizRequest request) {
+        QuizResponse response = quizService.updateQuiz(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+      public ResponseEntity<Void> deleteQuiz(@PathVariable Long id) {
+        quizService.deleteQuiz(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/category/{category}")
+      public ResponseEntity<String> deleteQuizzesByCategory(@PathVariable String category) {
+        int count = quizService.deleteByCategory(category);
+        if (count == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        cacheService.invalidate();
+        return ResponseEntity.ok("Deleted " + count + " quizzes with category: " + category);
+    }
+
+    @DeleteMapping("/published/{published}")
+      public ResponseEntity<String> deleteQuizzesByPublishedStatus(@PathVariable boolean published) {
+        int count = quizService.deleteByPublishedStatus(published);
+        if (count == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        cacheService.invalidate();
+        return ResponseEntity.ok("Deleted " + count + " quizzes with isPublished=" + published);
+    }
+
+    @DeleteMapping("/tag/{tagName}")
+      public ResponseEntity<String> deleteQuizzesByTag(@PathVariable String tagName) {
+        int count = quizService.deleteByTag(tagName);
+        if (count == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        cacheService.invalidate();
+        return ResponseEntity.ok("Deleted " + count + " quizzes with tag: " + tagName);
+    }
+
+    @DeleteMapping("/min-questions/{minQuestions}")
+      public ResponseEntity<String> deleteQuizzesByMinQuestions(@PathVariable int minQuestions) {
+        int count = quizService.deleteByMinQuestions(minQuestions);
+        if (count == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        cacheService.invalidate();
+        return ResponseEntity.ok("Deleted " + count + " quizzes with less than " + minQuestions + " questions");
+    }
+
+    @DeleteMapping("/all")
+  public ResponseEntity<String> deleteAllQuizzes() {
+        long count = quizService.deleteAllQuizzes();
+        cacheService.invalidate();
+        return ResponseEntity.ok("Deleted all " + count + " quizzes");
     }
 
     @DeleteMapping("/cache")
   public ResponseEntity<String> invalidateCache() {
         quizService.invalidateCache();
         return ResponseEntity.ok("Cache invalidated successfully!");
-    }
-
-    @PutMapping("/{id}")
-  public ResponseEntity<QuizResponse> updateQuiz(
-        @PathVariable Long id,
-        @Valid @RequestBody QuizRequest request) {
-        QuizResponse response = quizService.updateQuiz(id, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteQuiz(@PathVariable Long id) {
-        quizService.deleteQuiz(id);
-        return ResponseEntity.noContent().build();
     }
 }

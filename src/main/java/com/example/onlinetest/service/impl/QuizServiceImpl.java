@@ -230,4 +230,55 @@ public class QuizServiceImpl implements QuizService {
   public void invalidateCache() {
         cacheService.invalidate();
     }
+
+    @Override
+  public int deleteByCategory(String category) {
+        List<Quiz> quizzes = quizRepository.findByCategoryIgnoreCase(category);
+        int count = quizzes.size();
+        if (count > 0) {
+            quizRepository.deleteAll(quizzes);
+        }
+        return count;
+    }
+
+    @Override
+  public int deleteByPublishedStatus(Boolean published) {
+        List<Quiz> quizzes = quizRepository.findByIsPublished(published);
+        int count = quizzes.size();
+        if (count > 0) {
+            quizRepository.deleteAll(quizzes);
+        }
+        return count;
+    }
+
+    @Override
+  public int deleteByTag(String tagName) {
+        List<Quiz> quizzes = quizRepository.findByTag(tagName);
+        int count = quizzes.size();
+        if (count > 0) {
+            quizRepository.deleteAll(quizzes);
+        }
+        return count;
+    }
+
+    @Override
+  public int deleteByMinQuestions(int minQuestions) {
+        List<Quiz> allQuizzes = quizRepository.findAll();
+        List<Quiz> toDelete = allQuizzes.stream()
+            .filter(q -> q.getQuestions().size() < minQuestions)
+            .toList();
+        int count = toDelete.size();
+        if (count > 0) {
+            quizRepository.deleteAll(toDelete);
+        }
+        return count;
+    }
+
+    @Override
+  public long deleteAllQuizzes() {
+        long count = quizRepository.count();
+        quizRepository.deleteAll();
+        return count;
+    }
+
 }

@@ -30,7 +30,12 @@ public interface QuizService {
     QuizResponse updateQuiz(Long id, QuizRequest request);
 
     void deleteQuiz(Long id);
+    int deleteByCategory(String category);
+    int deleteByPublishedStatus(Boolean published);
+    int deleteByTag(String tagName);
+    int deleteByMinQuestions(int minQuestions);
+    long deleteAllQuizzes();
 
-    // Метод для инвалидации кэша
+    // CACHE
     void invalidateCache();
 }
