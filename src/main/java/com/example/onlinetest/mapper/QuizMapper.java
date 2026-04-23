@@ -25,18 +25,6 @@ public class QuizMapper {
         quiz.setCreatedAt(LocalDateTime.now());
         quiz.setUpdatedAt(LocalDateTime.now());
 
-        if (request.tags() != null && !request.tags().isEmpty()) {
-            List<Tag> tags = request.tags().stream()
-                .map(tagName -> {
-                    Tag tag = new Tag();
-                    tag.setName(tagName);
-                    return tag;
-                })
-                .toList();
-            quiz.setTags(new ArrayList<>(tags));
-        } else {
-            quiz.setTags(new ArrayList<>());
-        }
         return quiz;
     }
 

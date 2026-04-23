@@ -16,14 +16,15 @@ import com.example.onlinetest.repository.TagRepository;
 import com.example.onlinetest.repository.UserRepository;
 import com.example.onlinetest.service.QuizCacheService;
 import com.example.onlinetest.service.QuizService;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -43,18 +44,19 @@ public class QuizServiceImpl implements QuizService {
     private final QuizCacheService cacheService;
 
     private User getDefaultUser() {
-        return userRepository.findById(1L)
+        return userRepository.findByUsername(DEFAULT_USERNAME)
         .orElseGet(() -> {
             User newUser = new User();
             newUser.setUsername(DEFAULT_USERNAME);
             newUser.setEmail(DEFAULT_EMAIL);
             newUser.setPassword(DEFAULT_PASSWORD);
+            newUser.setCreatedAt(LocalDateTime.now());
             return userRepository.save(newUser);
         });
     }
 
     @Override
-    @Transactional
+  @Transactional
   public QuizResponse createQuiz(QuizRequest request) {
         Quiz quiz = quizMapper.toEntity(request);
         quiz.setCreatedBy(getDefaultUser());
@@ -62,11 +64,11 @@ public class QuizServiceImpl implements QuizService {
         if (request.tags() != null && !request.tags().isEmpty()) {
             List<Tag> processedTags = request.tags().stream()
                 .map(tagName -> tagRepository.findByName(tagName)
-                .orElseGet(() -> {
-                    Tag newTag = new Tag();
-                    newTag.setName(tagName);
-                    return tagRepository.save(newTag);
-                }))
+                  .orElseGet(() -> {
+                      Tag newTag = new Tag();
+                      newTag.setName(tagName);
+                      return tagRepository.save(newTag);
+                  }))
                 .toList();
             quiz.setTags(new ArrayList<>(processedTags));
         }
@@ -77,7 +79,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional
+  @Transactional
   public QuizResponse createFullQuiz(FullQuizRequest request) {
         Quiz quiz = quizMapper.toEntity(request.quiz());
         quiz.setCreatedBy(getDefaultUser());
@@ -94,10 +96,10 @@ public class QuizServiceImpl implements QuizService {
                 throw new QuizServiceException("ROLLBACK: Too many questions! Nothing will be saved.");
             }
 
+            cacheService.invalidate();
             savedQuiz = quizRepository.save(savedQuiz);
         }
 
-        cacheService.invalidate();
         return quizMapper.toResponse(savedQuiz);
     }
 
@@ -122,14 +124,13 @@ public class QuizServiceImpl implements QuizService {
         cacheService.invalidate();
         return quizMapper.toResponse(savedQuiz);
     }
-
     @Override
     @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
         log.info("N+1 PROBLEM: This will execute multiple SQL queries");
-        return quizRepository.findById(id)
-        .map(quizMapper::toResponse)
-        .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+        Quiz quiz = quizRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+        return quizMapper.toResponse(quiz);
     }
 
     @Override
@@ -158,51 +159,23 @@ public class QuizServiceImpl implements QuizService {
 
         return quizzes.stream()
         .map(quizMapper::toResponse)
-        .toList();
+            .toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
-  public Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published,
-        Integer minQuestions, Pageable pageable) {
-        QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
-            category, published, minQuestions, pageable.getPageNumber(), pageable.getPageSize()
-        );
-
-        Page<QuizResponse> cached = cacheService.get(key);
-        if (cached != null) {
-            log.info("Cache HIT for key: {}", key);
-            return cached;
-        }
-
-        log.info("Cache MISS for key: {}", key);
+  @Transactional(readOnly = true)
+    public Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published,
+          Integer minQuestions, Pageable pageable) {
         Page<Quiz> quizPage = quizRepository.findQuizzesWithFilters(category, published, minQuestions, pageable);
-        Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
-
-        cacheService.put(key, responsePage);
-        return responsePage;
+        return quizPage.map(quizMapper::toResponse);
     }
 
     @Override
-    @Transactional(readOnly = true)
-  public Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
-        Integer minQuestions, Pageable pageable) {
-        QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
-            category, published, minQuestions, pageable.getPageNumber(), pageable.getPageSize()
-        );
-
-        Page<QuizResponse> cached = cacheService.get(key);
-        if (cached != null) {
-            log.info("Cache HIT for native query key: {}", key);
-            return cached;
-        }
-
-        log.info("Cache MISS for native query key: {}", key);
+  @Transactional(readOnly = true)
+    public Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
+          Integer minQuestions, Pageable pageable) {
         Page<Quiz> quizPage = quizRepository.findQuizzesWithFiltersNative(category, published, minQuestions, pageable);
-        Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
-
-        cacheService.put(key, responsePage);
-        return responsePage;
+        return quizPage.map(quizMapper::toResponse);
     }
 
     @Override
@@ -280,5 +253,4 @@ public class QuizServiceImpl implements QuizService {
         quizRepository.deleteAll();
         return count;
     }
-
 }

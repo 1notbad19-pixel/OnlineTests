@@ -21,17 +21,16 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q JOIN q.tags t WHERE t = :tag")
     List<Quiz> findByTag(@Param("tag") String tag);
 
-    // РЕШЕНИЕ N+1: метод с @EntityGraph - загружает вопросы одним запросом
     @EntityGraph(attributePaths = {"questions"})
     @Query("SELECT q FROM Quiz q WHERE q.id = :id")
-    Optional<Quiz> findByIdWithQuestions(@Param("id") Long id);
+  Optional<Quiz> findByIdWithQuestions(@Param("id") Long id);
 
     @Query("SELECT DISTINCT q FROM Quiz q " +
         "LEFT JOIN q.questions qs " +
         "WHERE (:category IS NULL OR q.category = :category) " +
         "AND (:published IS NULL OR q.isPublished = :published) " +
         "AND (:minQuestions IS NULL OR SIZE(q.questions) >= :minQuestions)")
-    Page<Quiz> findQuizzesWithFilters(@Param("category") String category,
+  Page<Quiz> findQuizzesWithFilters(@Param("category") String category,
         @Param("published") Boolean published,
         @Param("minQuestions") Integer minQuestions,
         Pageable pageable);
@@ -43,8 +42,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
         "AND (:minQuestions IS NULL OR (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) >= :minQuestions)",
         countQuery = "SELECT COUNT(DISTINCT q.id) FROM quizzes q",
         nativeQuery = true)
-    Page<Quiz> findQuizzesWithFiltersNative(@Param("category") String category,
+  Page<Quiz> findQuizzesWithFiltersNative(@Param("category") String category,
         @Param("published") Boolean published,
-        @Param("minQuestions") Integer minQuestions,
+         @Param("minQuestions") Integer minQuestions,
         Pageable pageable);
 }

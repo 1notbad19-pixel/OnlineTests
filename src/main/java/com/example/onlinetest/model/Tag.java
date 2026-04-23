@@ -31,5 +31,4 @@ public class Tag {
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
   private List<Quiz> quizzes = new ArrayList<>();
 
-  // Удаляем конструктор Tag(String name) - Lombok @AllArgsConstructor уже создает конструктор со всеми полями
 }

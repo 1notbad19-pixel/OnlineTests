@@ -36,6 +36,5 @@ public interface QuizService {
     int deleteByMinQuestions(int minQuestions);
     long deleteAllQuizzes();
 
-    // CACHE
     void invalidateCache();
 }

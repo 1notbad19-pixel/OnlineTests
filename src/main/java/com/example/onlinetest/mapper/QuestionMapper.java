@@ -1,9 +1,9 @@
 package com.example.onlinetest.mapper;
 
-import com.example.onlinetest.dto.QuestionRequest;
 import com.example.onlinetest.dto.AnswerRequest;
-import com.example.onlinetest.model.Question;
+import com.example.onlinetest.dto.QuestionRequest;
 import com.example.onlinetest.model.Answer;
+import com.example.onlinetest.model.Question;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,4 @@ public class QuestionMapper {
         answer.setIsCorrect(request.isCorrect() != null && request.isCorrect());
         return answer;
     }
-
-    // Удалите метод toResponse, если он не используется
 }

@@ -32,7 +32,7 @@ public record QuizRequest(
     @Max(100)
     Integer passingScore,
 
-    List<String> tags  // Теперь это имена тегов, которые будут создаваться или находиться
+    List<String> tags
 ) {
 
 }

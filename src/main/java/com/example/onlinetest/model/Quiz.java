@@ -58,12 +58,10 @@ public class Quiz {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Связь с User (ManyToOne) - кто создал квиз
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    // Связь с Tag (ManyToMany)
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "quiz_tag_mapping",
@@ -72,7 +70,6 @@ public class Quiz {
     )
     private List<Tag> tags = new ArrayList<>();
 
-    // Связь с Question (OneToMany)
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Question> questions = new ArrayList<>();
 }
