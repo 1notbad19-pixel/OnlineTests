@@ -74,6 +74,7 @@ public class QuizServiceImpl implements QuizService {
         }
 
         Quiz savedQuiz = quizRepository.save(quiz);
+        log.info("Инвалидация кэша после создания квиза ID: {}", savedQuiz.getId());
         cacheService.invalidate();
         return quizMapper.toResponse(savedQuiz);
     }
@@ -92,7 +93,7 @@ public class QuizServiceImpl implements QuizService {
                 savedQuiz.getQuestions().add(question);
             }
 
-            if (request.questions().size() > 2) {
+            if (request.questions().size() > 10) {
                 throw new QuizServiceException("ROLLBACK: Too many questions! Nothing will be saved.");
             }
 
@@ -116,7 +117,7 @@ public class QuizServiceImpl implements QuizService {
                 savedQuiz.getQuestions().add(question);
             }
 
-            if (request.questions().size() > 2) {
+            if (request.questions().size() > 10) {
                 throw new QuizServiceException("Too many questions! Quiz saved but questions were not.");
             }
         }
@@ -166,16 +167,55 @@ public class QuizServiceImpl implements QuizService {
   @Transactional(readOnly = true)
     public Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published,
           Integer minQuestions, Pageable pageable) {
+        QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
+            category,
+            published,
+            minQuestions,
+            pageable.getPageNumber(),
+            pageable.getPageSize()
+        );
+
+        Page<QuizResponse> cached = cacheService.get(key);
+        if (cached != null) {
+            log.info("✅ CACHE HIT! Данные из кэша для ключа: {}", key);
+            return cached;
+        }
+
+        log.info("❌ CACHE MISS! Идём в базу данных для ключа: {}", key);
         Page<Quiz> quizPage = quizRepository.findQuizzesWithFilters(category, published, minQuestions, pageable);
-        return quizPage.map(quizMapper::toResponse);
+        Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
+
+        cacheService.put(key, responsePage);
+        log.info("💾 Данные сохранены в кэш");
+
+        return responsePage;
     }
 
     @Override
   @Transactional(readOnly = true)
     public Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
           Integer minQuestions, Pageable pageable) {
+        QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
+            category,
+            published,
+            minQuestions,
+            pageable.getPageNumber(),
+            pageable.getPageSize()
+        );
+
+        Page<QuizResponse> cached = cacheService.get(key);
+        if (cached != null) {
+            log.info("✅ CACHE HIT! (native) Данные из кэша");
+            return cached;
+        }
+
+        log.info("❌ CACHE MISS! (native) Идём в базу данных");
         Page<Quiz> quizPage = quizRepository.findQuizzesWithFiltersNative(category, published, minQuestions, pageable);
-        return quizPage.map(quizMapper::toResponse);
+        Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
+
+        cacheService.put(key, responsePage);
+
+        return responsePage;
     }
 
     @Override
@@ -185,6 +225,7 @@ public class QuizServiceImpl implements QuizService {
             .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
         quizMapper.update(quiz, request);
         Quiz updatedQuiz = quizRepository.save(quiz);
+        log.info("Инвалидация кэша после обновления квиза ID: {}", id);
         cacheService.invalidate();
         return quizMapper.toResponse(updatedQuiz);
     }
@@ -196,6 +237,7 @@ public class QuizServiceImpl implements QuizService {
             throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
         }
         quizRepository.deleteById(id);
+        log.info("Инвалидация кэша после удаления квиза ID: {}", id);
         cacheService.invalidate();
     }
 

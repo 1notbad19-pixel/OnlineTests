@@ -1,5 +1,6 @@
 package com.example.onlinetest.model;
 
+import lombok.ToString;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,6 +30,7 @@ public class Tag {
   private String name;
 
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @ToString.Exclude
   private List<Quiz> quizzes = new ArrayList<>();
 
 }
