@@ -14,6 +14,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -31,6 +33,6 @@ public class Tag {
 
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     @ToString.Exclude
-  private List<Quiz> quizzes = new ArrayList<>();
+    private Set<Quiz> quizzes = new HashSet<>();
 
 }

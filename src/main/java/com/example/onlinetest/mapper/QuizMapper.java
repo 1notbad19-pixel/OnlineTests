@@ -6,9 +6,10 @@ import com.example.onlinetest.model.Quiz;
 import com.example.onlinetest.model.Tag;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class QuizMapper {
@@ -25,27 +26,40 @@ public class QuizMapper {
         quiz.setCreatedAt(LocalDateTime.now());
         quiz.setUpdatedAt(LocalDateTime.now());
 
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            Set<Tag> tags = request.tags().stream()
+                .map(tagName -> {
+                    Tag tag = new Tag();
+                    tag.setName(tagName);
+                    return tag;
+                })
+                .collect(Collectors.toSet());
+            quiz.setTags(tags);
+        } else {
+            quiz.setTags(new HashSet<>());
+        }
         return quiz;
     }
 
     public QuizResponse toResponse(Quiz quiz) {
-        List<String> tagNames = quiz.getTags() != null
-            ? quiz.getTags().stream().map(Tag::getName).toList()
-            : new ArrayList<>();
+        Set<String> tagNames = quiz.getTags() != null
+            ? quiz.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
+            : new HashSet<>();
+
         return new QuizResponse(
-            quiz.getId(),
-            quiz.getTitle(),
-            quiz.getDescription(),
-            quiz.getCategory(),
-            quiz.getTimeLimitMinutes(),
-            quiz.getMaxAttempts(),
-            quiz.getIsPublished(),
-            quiz.getPassingScore(),
-            quiz.getCreatedAt(),
-            quiz.getUpdatedAt(),
-            tagNames,
-            quiz.getQuestions() != null ? quiz.getQuestions().size() : 0
-        );
+        quiz.getId(),
+        quiz.getTitle(),
+        quiz.getDescription(),
+        quiz.getCategory(),
+        quiz.getTimeLimitMinutes(),
+        quiz.getMaxAttempts(),
+        quiz.getIsPublished(),
+        quiz.getPassingScore(),
+        quiz.getCreatedAt(),
+        quiz.getUpdatedAt(),
+        tagNames.stream().toList(),
+        quiz.getQuestions() != null ? quiz.getQuestions().size() : 0
+    );
     }
 
     public void update(Quiz quiz, QuizRequest request) {
@@ -59,13 +73,13 @@ public class QuizMapper {
         quiz.setUpdatedAt(LocalDateTime.now());
 
         if (request.tags() != null) {
-            List<Tag> tags = request.tags().stream()
+            Set<Tag> tags = request.tags().stream()
                 .map(tagName -> {
                     Tag tag = new Tag();
                     tag.setName(tagName);
                     return tag;
                 })
-                .toList();
+                .collect(Collectors.toSet());
             quiz.getTags().clear();
             quiz.getTags().addAll(tags);
         }

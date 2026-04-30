@@ -17,7 +17,6 @@ import com.example.onlinetest.repository.UserRepository;
 import com.example.onlinetest.service.QuizCacheService;
 import com.example.onlinetest.service.QuizService;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashSet;
 
 @Slf4j
 @Service
@@ -64,13 +64,13 @@ public class QuizServiceImpl implements QuizService {
         if (request.tags() != null && !request.tags().isEmpty()) {
             List<Tag> processedTags = request.tags().stream()
                 .map(tagName -> tagRepository.findByName(tagName)
-                  .orElseGet(() -> {
-                      Tag newTag = new Tag();
-                      newTag.setName(tagName);
-                      return tagRepository.save(newTag);
-                  }))
+                .orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagName);
+                    return tagRepository.save(newTag);
+                }))
                 .toList();
-            quiz.setTags(new ArrayList<>(processedTags));
+            quiz.setTags(new HashSet<>(processedTags));  // ← используем processedTags
         }
 
         Quiz savedQuiz = quizRepository.save(quiz);
@@ -138,7 +138,7 @@ public class QuizServiceImpl implements QuizService {
     @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
         log.info("N+1 SOLUTION: This will execute only ONE SQL query with JOIN FETCH");
-        Quiz quiz = quizRepository.findByIdWithQuestions(id)
+        Quiz quiz = quizRepository.findByIdWithAllDetails(id)
             .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);
     }
