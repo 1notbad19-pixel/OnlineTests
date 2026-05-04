@@ -70,7 +70,7 @@ public class QuizServiceImpl implements QuizService {
                     return tagRepository.save(newTag);
                 }))
                 .toList();
-            quiz.setTags(new HashSet<>(processedTags));  // ← используем processedTags
+            quiz.setTags(new HashSet<>(processedTags));
         }
 
         Quiz savedQuiz = quizRepository.save(quiz);
@@ -128,7 +128,6 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
-        log.info("N+1 PROBLEM: This will execute multiple SQL queries");
         Quiz quiz = quizRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);
@@ -137,7 +136,6 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
-        log.info("N+1 SOLUTION: This will execute only ONE SQL query with JOIN FETCH");
         Quiz quiz = quizRepository.findByIdWithAllDetails(id)
             .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);

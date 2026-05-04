@@ -19,12 +19,14 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.EqualsAndHashCode;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "quizzes")
+@EqualsAndHashCode(exclude = {"tags", "questions", "createdBy"})
 public class Quiz {
 
     @Id

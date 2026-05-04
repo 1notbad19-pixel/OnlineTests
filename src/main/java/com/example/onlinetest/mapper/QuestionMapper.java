@@ -2,7 +2,6 @@ package com.example.onlinetest.mapper;
 
 import com.example.onlinetest.dto.AnswerRequest;
 import com.example.onlinetest.dto.QuestionRequest;
-import com.example.onlinetest.dto.QuestionResponse;
 import com.example.onlinetest.model.Answer;
 import com.example.onlinetest.model.Question;
 import org.springframework.stereotype.Component;
@@ -33,25 +32,5 @@ public class QuestionMapper {
         answer.setText(request.text());
         answer.setIsCorrect(request.isCorrect() != null && request.isCorrect());
         return answer;
-    }
-
-    public QuestionResponse toResponse(Question question) {
-        return new QuestionResponse(
-        question.getId(),
-        question.getText(),
-        question.getType(),
-        question.getPoints(),
-        question.getAnswers().stream()
-            .map(this::toAnswerResponse)
-            .collect(Collectors.toList())
-    );
-    }
-
-    private com.example.onlinetest.dto.AnswerResponse toAnswerResponse(Answer answer) {
-        return new com.example.onlinetest.dto.AnswerResponse(
-        answer.getId(),
-        answer.getText(),
-        answer.getIsCorrect()
-    );
     }
 }

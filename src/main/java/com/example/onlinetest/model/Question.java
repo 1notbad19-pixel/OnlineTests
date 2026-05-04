@@ -16,12 +16,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.EqualsAndHashCode;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "questions")
+@EqualsAndHashCode(exclude = {"quiz", "answers"})
 public class Question {
 
     @Id
