@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        log.error("400 Bad Request - Validation error: {}", errors);
+        log.warn("400 Bad Request - Validation error: {}", errors);
 
         ErrorResponse error = new ErrorResponse(
             LocalDateTime.now(),
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
         IllegalArgumentException ex, WebRequest request) {
 
-        log.error("404 Not Found - {}", ex.getMessage());
+        log.warn("404 Not Found - {}", ex.getMessage());
 
         ErrorResponse error = new ErrorResponse(
             LocalDateTime.now(),
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
         String message = ex.getMostSpecificCause().getMessage();
         String userMessage = extractUserMessageFromConstraintViolation(message);
 
-        log.error("409 Conflict - {}", userMessage);
+        log.warn("409 Conflict - {}", userMessage);
 
         ErrorResponse error = new ErrorResponse(
             LocalDateTime.now(),

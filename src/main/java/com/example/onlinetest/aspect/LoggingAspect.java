@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @Slf4j
-@SuppressWarnings("unused")
+
 public class LoggingAspect {
 
     @Around("execution(* com.example.onlinetest.service.*.*(..))")
