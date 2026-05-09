@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -292,5 +293,27 @@ public class QuizServiceImpl implements QuizService {
         long count = quizRepository.count();
         quizRepository.deleteAll();
         return count;
+    }
+
+    @Override
+    @Transactional
+  public List<QuizResponse> createQuizzesBulk(List<QuizRequest> requests) {
+        List<QuizResponse> responses = new ArrayList<>();
+        for (QuizRequest request : requests) {
+            responses.add(createQuiz(request));
+        }
+        return responses;
+    }
+
+    @Override
+  public List<QuizResponse> createQuizzesBulkWithoutTransaction(List<QuizRequest> requests) {
+        List<QuizResponse> responses = new ArrayList<>();
+        for (int i = 0; i < requests.size(); i++) {
+            if (i == 2) {
+                throw new QuizServiceException("Error on 3rd quiz! First two were saved.");
+            }
+            responses.add(createQuiz(requests.get(i)));
+        }
+        return responses;
     }
 }

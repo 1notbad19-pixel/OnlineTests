@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.example.onlinetest.exception.ErrorResponse;
+import com.example.onlinetest.dto.BulkQuizCreateRequest;
 
 @RestController
 @RequestMapping("/api/quizzes")
@@ -169,6 +170,17 @@ public class QuizController {
       @ApiResponse(responseCode = "404", description = "Квиз не найден",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
+
+    @PostMapping("/bulk")
+    public ResponseEntity<List<QuizResponse>> createQuizzesBulk(@Valid @RequestBody BulkQuizCreateRequest request) {
+      return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuizzesBulk(request.quizzes()));
+    }
+
+  @PostMapping("/bulk/without-transaction")
+  public ResponseEntity<List<QuizResponse>> createQuizzesBulkWithoutTransaction(@Valid @RequestBody BulkQuizCreateRequest request) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuizzesBulkWithoutTransaction(request.quizzes()));
+  }
+
     @PutMapping("/{id}")
     public ResponseEntity<QuizResponse> updateQuiz(
         @Parameter(description = "ID квиза", example = "1")

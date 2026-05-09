@@ -29,6 +29,9 @@ public interface QuizService {
 
     QuizResponse updateQuiz(Long id, QuizRequest request);
 
+    List<QuizResponse> createQuizzesBulk(List<QuizRequest> requests);
+    List<QuizResponse> createQuizzesBulkWithoutTransaction(List<QuizRequest> requests);
+
     void deleteQuiz(Long id);
     int deleteByCategory(String category);
     int deleteByPublishedStatus(Boolean published);
