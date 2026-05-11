@@ -173,13 +173,15 @@ public class QuizController {
 
     @PostMapping("/bulk")
     public ResponseEntity<List<QuizResponse>> createQuizzesBulk(@Valid @RequestBody BulkQuizCreateRequest request) {
-      return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuizzesBulk(request.quizzes()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuizzesBulk(request.quizzes()));
     }
 
-  @PostMapping("/bulk/without-transaction")
-  public ResponseEntity<List<QuizResponse>> createQuizzesBulkWithoutTransaction(@Valid @RequestBody BulkQuizCreateRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(quizService.createQuizzesBulkWithoutTransaction(request.quizzes()));
-  }
+    @PostMapping("/bulk/without-transaction")
+  public ResponseEntity<List<QuizResponse>> createQuizzesBulkWithoutTransaction(@Valid @RequestBody
+        BulkQuizCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).
+        body(quizService.createQuizzesBulkWithoutTransaction(request.quizzes()));
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<QuizResponse> updateQuiz(

@@ -17,6 +17,8 @@ import com.example.onlinetest.repository.UserRepository;
 import com.example.onlinetest.service.QuizCacheService;
 import com.example.onlinetest.service.QuizService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +26,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.HashSet;
-import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -59,25 +59,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
   @Transactional
   public QuizResponse createQuiz(QuizRequest request) {
-        Quiz quiz = quizMapper.toEntity(request);
-        quiz.setCreatedBy(getDefaultUser());
-
-        if (request.tags() != null && !request.tags().isEmpty()) {
-            List<Tag> processedTags = request.tags().stream()
-                .map(tagName -> tagRepository.findByName(tagName)
-                .orElseGet(() -> {
-                    Tag newTag = new Tag();
-                    newTag.setName(tagName);
-                    return tagRepository.save(newTag);
-                }))
-                .toList();
-            quiz.setTags(new HashSet<>(processedTags));
-        }
-
-        Quiz savedQuiz = quizRepository.save(quiz);
-        log.info("Инвалидация кэша после создания квиза ID: {}", savedQuiz.getId());
-        cacheService.invalidate();
-        return quizMapper.toResponse(savedQuiz);
+        return createQuizInternal(request);
     }
 
     @Override
@@ -126,25 +108,29 @@ public class QuizServiceImpl implements QuizService {
         cacheService.invalidate();
         return quizMapper.toResponse(savedQuiz);
     }
+
     @Override
     @Transactional(readOnly = true)
   public QuizResponse getQuiz(Long id) {
         Quiz quiz = quizRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+            .orElseThrow(() -> new IllegalArgumentException(
+            QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);
     }
 
     @Override
-    @Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public QuizResponse getQuizWithDetails(Long id) {
         Quiz quiz = quizRepository.findByIdWithAllDetails(id)
-            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+            .orElseThrow(() -> new IllegalArgumentException(
+            QUIZ_NOT_FOUND_MSG + id));
         return quizMapper.toResponse(quiz);
     }
 
     @Override
-    @Transactional(readOnly = true)
-  public List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag) {
+  @Transactional(readOnly = true)
+  public List<QuizResponse> getAllQuizzes(String category, Boolean published,
+        String tag) {
         List<Quiz> quizzes;
 
         if (category != null) {
@@ -159,13 +145,13 @@ public class QuizServiceImpl implements QuizService {
 
         return quizzes.stream()
         .map(quizMapper::toResponse)
-            .toList();
+        .toList();
     }
 
     @Override
   @Transactional(readOnly = true)
-    public Page<QuizResponse> getQuizzesWithFilters(String category, Boolean published,
-          Integer minQuestions, Pageable pageable) {
+  public Page<QuizResponse> getQuizzesWithFilters(String category,
+        Boolean published, Integer minQuestions, Pageable pageable) {
         QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
             category,
             published,
@@ -181,7 +167,8 @@ public class QuizServiceImpl implements QuizService {
         }
 
         log.info("❌ CACHE MISS! Идём в базу данных для ключа: {}", key);
-        Page<Quiz> quizPage = quizRepository.findQuizzesWithFilters(category, published, minQuestions, pageable);
+        Page<Quiz> quizPage = quizRepository.findQuizzesWithFilters(
+            category, published, minQuestions, pageable);
         Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
 
         cacheService.put(key, responsePage);
@@ -192,8 +179,8 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
   @Transactional(readOnly = true)
-    public Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
-          Integer minQuestions, Pageable pageable) {
+  public Page<QuizResponse> getQuizzesWithFiltersNative(String category,
+        Boolean published, Integer minQuestions, Pageable pageable) {
         QuizCacheService.CacheKey key = new QuizCacheService.CacheKey(
             category,
             published,
@@ -209,7 +196,8 @@ public class QuizServiceImpl implements QuizService {
         }
 
         log.info("❌ CACHE MISS! (native) Идём в базу данных");
-        Page<Quiz> quizPage = quizRepository.findQuizzesWithFiltersNative(category, published, minQuestions, pageable);
+        Page<Quiz> quizPage = quizRepository.findQuizzesWithFiltersNative(
+            category, published, minQuestions, pageable);
         Page<QuizResponse> responsePage = quizPage.map(quizMapper::toResponse);
 
         cacheService.put(key, responsePage);
@@ -218,10 +206,11 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional
+  @Transactional
   public QuizResponse updateQuiz(Long id, QuizRequest request) {
         Quiz quiz = quizRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id));
+            .orElseThrow(() -> new IllegalArgumentException(
+            QUIZ_NOT_FOUND_MSG + id));
         quizMapper.update(quiz, request);
         Quiz updatedQuiz = quizRepository.save(quiz);
         log.info("Инвалидация кэша после обновления квиза ID: {}", id);
@@ -230,7 +219,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional
+  @Transactional
   public void deleteQuiz(Long id) {
         if (!quizRepository.existsById(id)) {
             throw new IllegalArgumentException(QUIZ_NOT_FOUND_MSG + id);
@@ -246,6 +235,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+  @Transactional
   public int deleteByCategory(String category) {
         List<Quiz> quizzes = quizRepository.findByCategoryIgnoreCase(category);
         int count = quizzes.size();
@@ -256,6 +246,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+  @Transactional
   public int deleteByPublishedStatus(Boolean published) {
         List<Quiz> quizzes = quizRepository.findByIsPublished(published);
         int count = quizzes.size();
@@ -266,6 +257,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+  @Transactional
   public int deleteByTag(String tagName) {
         List<Quiz> quizzes = quizRepository.findByTag(tagName);
         int count = quizzes.size();
@@ -276,6 +268,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Transactional
   public int deleteByMinQuestions(int minQuestions) {
         List<Quiz> allQuizzes = quizRepository.findAll();
         List<Quiz> toDelete = allQuizzes.stream()
@@ -289,6 +282,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+  @Transactional
   public long deleteAllQuizzes() {
         long count = quizRepository.count();
         quizRepository.deleteAll();
@@ -300,20 +294,44 @@ public class QuizServiceImpl implements QuizService {
   public List<QuizResponse> createQuizzesBulk(List<QuizRequest> requests) {
         List<QuizResponse> responses = new ArrayList<>();
         for (QuizRequest request : requests) {
-            responses.add(createQuiz(request));
+            responses.add(createQuizInternal(request));
         }
+        cacheService.invalidate();
         return responses;
     }
 
     @Override
-  public List<QuizResponse> createQuizzesBulkWithoutTransaction(List<QuizRequest> requests) {
+  public List<QuizResponse> createQuizzesBulkWithoutTransaction(
+        List<QuizRequest> requests) {
         List<QuizResponse> responses = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
             if (i == 2) {
-                throw new QuizServiceException("Error on 3rd quiz! First two were saved.");
+                throw new QuizServiceException(
+                    "Error on 3rd quiz! First two were saved.");
             }
-            responses.add(createQuiz(requests.get(i)));
+            responses.add(createQuizInternal(requests.get(i)));
         }
+        cacheService.invalidate();
         return responses;
+    }
+
+    private QuizResponse createQuizInternal(QuizRequest request) {
+        Quiz quiz = quizMapper.toEntity(request);
+        quiz.setCreatedBy(getDefaultUser());
+
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            List<Tag> processedTags = request.tags().stream()
+                .map(tagName -> tagRepository.findByName(tagName)
+                .orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagName);
+                    return tagRepository.save(newTag);
+                }))
+                .toList();
+            quiz.setTags(new HashSet<>(processedTags));
+        }
+
+        Quiz savedQuiz = quizRepository.save(quiz);
+        return quizMapper.toResponse(savedQuiz);
     }
 }
