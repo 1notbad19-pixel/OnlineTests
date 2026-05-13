@@ -290,11 +290,14 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    @Transactional
+  @Transactional
   public List<QuizResponse> createQuizzesBulk(List<QuizRequest> requests) {
         List<QuizResponse> responses = new ArrayList<>();
-        for (QuizRequest request : requests) {
-            responses.add(createQuizInternal(request));
+        for (int i = 0; i < requests.size(); i++) {
+            if (i == 2) {
+                throw new QuizServiceException("ROLLBACK: Error on 3rd quiz! Nothing will be saved.");
+            }
+            responses.add(createQuizInternal(requests.get(i)));
         }
         cacheService.invalidate();
         return responses;

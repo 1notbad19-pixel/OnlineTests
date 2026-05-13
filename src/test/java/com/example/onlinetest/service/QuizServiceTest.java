@@ -525,8 +525,10 @@ class QuizServiceTest {
     verify(cacheService).invalidate();
   }
 
+  // ==================== BULK ОПЕРАЦИИ ====================
+
   @Test
-  void createQuizzesBulk_Success_ReturnsListOfResponses() {
+  void createQuizzesBulk_Success_AllSaved() {
     List<QuizRequest> requests = List.of(testRequest, testRequest);
 
     when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
@@ -543,7 +545,7 @@ class QuizServiceTest {
   }
 
   @Test
-  void createQuizzesBulkWithoutTransaction_Success_FirstTwoSavedThirdThrowsException() {
+  void createQuizzesBulk_WithError_ShouldRollbackAll() {
     List<QuizRequest> requests = List.of(testRequest, testRequest, testRequest);
 
     when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
@@ -551,15 +553,16 @@ class QuizServiceTest {
     when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
     when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
 
-    assertThrows(QuizServiceException.class, () ->
-        quizService.createQuizzesBulkWithoutTransaction(requests));
+    assertThrows(QuizServiceException.class, () -> {
+      quizService.createQuizzesBulk(requests);
+    });
 
     verify(quizRepository, times(2)).save(any(Quiz.class));
-    // НЕ проверяем cacheService.invalidate() — он не вызывается при ошибке
+    verify(cacheService, never()).invalidate();
   }
 
   @Test
-  void createQuizzesBulkWithoutTransaction_WithTwoRequests_AllSaved() {
+  void createQuizzesBulkWithoutTransaction_Success_AllSaved() {
     List<QuizRequest> requests = List.of(testRequest, testRequest);
 
     when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
@@ -573,5 +576,21 @@ class QuizServiceTest {
     assertEquals(2, result.size());
     verify(quizRepository, times(2)).save(any(Quiz.class));
     verify(cacheService).invalidate();
+  }
+
+  @Test
+  void createQuizzesBulkWithoutTransaction_WithError_ShouldSaveFirstTwo() {
+    List<QuizRequest> requests = List.of(testRequest, testRequest, testRequest);
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(any(QuizRequest.class))).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    assertThrows(QuizServiceException.class, () -> {
+      quizService.createQuizzesBulkWithoutTransaction(requests);
+    });
+
+    verify(quizRepository, times(2)).save(any(Quiz.class));
   }
 }
