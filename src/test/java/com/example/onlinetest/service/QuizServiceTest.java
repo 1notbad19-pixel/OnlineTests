@@ -589,4 +589,113 @@ class QuizServiceTest {
     verify(quizRepository, times(2)).save(any(Quiz.class));
     verify(cacheService, never()).invalidate();
   }
+
+  @Test
+  void createQuiz_WithoutTags_Success() {
+    QuizRequest requestWithoutTags = new QuizRequest(
+        "Quiz No Tags", "Description", "Programming",
+        30, 3, true, 70, null
+    );
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(requestWithoutTags)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createQuiz(requestWithoutTags);
+
+    assertNotNull(result);
+    verify(tagRepository, never()).findByName(any());
+  }
+
+  @Test
+  void createFullQuiz_WithoutQuestions_Success() {
+    FullQuizRequest fullRequest = new FullQuizRequest(testRequest, null);
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(testRequest)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createFullQuiz(fullRequest);
+
+    assertNotNull(result);
+    verify(questionMapper, never()).toEntity(any());
+    verify(cacheService, never()).invalidate();
+  }
+
+  @Test
+  void createFullQuizWithoutTransaction_WithoutQuestions_Success() {
+    FullQuizRequest fullRequest = new FullQuizRequest(testRequest, null);
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(testRequest)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createFullQuizWithoutTransaction(fullRequest);
+
+    assertNotNull(result);
+    verify(questionMapper, never()).toEntity(any());
+    //verify(cacheService, never()).invalidate();
+  }
+
+  @Test
+  void createQuiz_WithEmptyTagsList_Success() {
+    // Создаём запрос с ПУСТЫМ списком тегов
+    QuizRequest requestWithEmptyTags = new QuizRequest(
+        "Quiz Empty Tags",
+        "Description",
+        "Programming",
+        30,
+        3,
+        true,
+        70,
+        List.of()  // ← пустой список, а не null
+    );
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(requestWithEmptyTags)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createQuiz(requestWithEmptyTags);
+
+    assertNotNull(result);
+    verify(tagRepository, never()).findByName(any());
+  }
+
+  @Test
+  void createFullQuizWithoutTransaction_WithEmptyQuestionsList() {
+    // questions = пустой список (не null)
+    FullQuizRequest fullRequest = new FullQuizRequest(testRequest, List.of());
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(testRequest)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createFullQuizWithoutTransaction(fullRequest);
+
+    assertNotNull(result);
+    verify(questionMapper, never()).toEntity(any());
+  }
+
+  @Test
+  void createFullQuiz_WithEmptyQuestionsList() {
+    // Создаём запрос с ПУСТЫМ списком вопросов (не null)
+    FullQuizRequest fullRequest = new FullQuizRequest(testRequest, List.of());
+
+    when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
+    when(quizMapper.toEntity(testRequest)).thenReturn(testQuiz);
+    when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
+    when(quizMapper.toResponse(testQuiz)).thenReturn(testResponse);
+
+    QuizResponse result = quizService.createFullQuiz(fullRequest);
+
+    assertNotNull(result);
+    // Проверяем, что блок if НЕ выполнился
+    verify(questionMapper, never()).toEntity(any());
+    verify(cacheService, never()).invalidate();
+  }
 }
