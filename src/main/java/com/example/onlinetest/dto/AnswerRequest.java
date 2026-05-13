@@ -10,5 +10,8 @@ public record AnswerRequest(
     String text,
 
     @Schema(description = "Правильный ли ответ?", example = "true")
-    Boolean isCorrect
+    Boolean isCorrect,
+
+    @Schema(description = "ID вопроса", example = "1")
+    Long questionId
 ) { }

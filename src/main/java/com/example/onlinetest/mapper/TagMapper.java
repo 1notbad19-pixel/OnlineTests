@@ -15,9 +15,18 @@ public class TagMapper {
     }
 
     public TagResponse toResponse(Tag tag) {
+        if (tag == null) {
+            return null;
+        }
         return new TagResponse(
-        tag.getId(),
-        tag.getName()
-    );
+            tag.getId(),
+            tag.getName()
+        );
+    }
+
+    public void update(Tag tag, TagRequest request) {
+        if (request.name() != null) {
+            tag.setName(request.name());
+        }
     }
 }

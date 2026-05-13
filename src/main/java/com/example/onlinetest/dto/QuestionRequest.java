@@ -22,5 +22,8 @@ public record QuestionRequest(
     Integer points,
 
     @Schema(description = "Варианты ответов")
-    List<AnswerRequest> answers
+    List<AnswerRequest> answers,
+
+    @Schema(description = "ID квиза", example = "1")
+    Long quizId
 ) { }

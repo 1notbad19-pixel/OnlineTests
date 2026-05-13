@@ -102,7 +102,6 @@ class QuizServiceTest {
     assertNotNull(result);
     assertEquals(testResponse.title(), result.title());
     verify(quizRepository).save(testQuiz);
-    // verify(cacheService).invalidate();  // УДАЛЕНО - не вызывается в реальном коде
   }
 
   @Test
@@ -128,7 +127,6 @@ class QuizServiceTest {
     QuizResponse result = quizService.createQuiz(requestWithTags);
 
     assertNotNull(result);
-    // verify(cacheService).invalidate();  // УДАЛЕНО - не вызывается
   }
 
   @Test
@@ -147,7 +145,6 @@ class QuizServiceTest {
 
     assertNotNull(result);
     verify(userRepository).save(any(User.class));
-    // verify(cacheService).invalidate();  // УДАЛЕНО
   }
 
   @Test
@@ -268,7 +265,7 @@ class QuizServiceTest {
 
   @Test
   void createFullQuiz_Success_ReturnsQuizResponse() {
-    QuestionRequest questionRequest = new QuestionRequest("What is Java?", "SINGLE", 10, List.of());
+    QuestionRequest questionRequest = new QuestionRequest("What is Java?", "SINGLE", 10, List.of(), null);
     FullQuizRequest fullRequest = new FullQuizRequest(testRequest, List.of(questionRequest));
 
     Question mockQuestion = new Question();
@@ -290,7 +287,7 @@ class QuizServiceTest {
   void createFullQuiz_TooManyQuestions_ThrowsException() {
     List<QuestionRequest> questions = new ArrayList<>();
     for (int i = 0; i < 11; i++) {
-      questions.add(new QuestionRequest("Q" + i, "SINGLE", 10, List.of()));
+      questions.add(new QuestionRequest("Q" + i, "SINGLE", 10, List.of(), null));
     }
     FullQuizRequest fullRequest = new FullQuizRequest(testRequest, questions);
 
@@ -305,7 +302,7 @@ class QuizServiceTest {
 
   @Test
   void createFullQuizWithoutTransaction_Success_ReturnsQuizResponse() {
-    QuestionRequest questionRequest = new QuestionRequest("What is Java?", "SINGLE", 10, List.of());
+    QuestionRequest questionRequest = new QuestionRequest("What is Java?", "SINGLE", 10, List.of(), null);
     FullQuizRequest fullRequest = new FullQuizRequest(testRequest, List.of(questionRequest));
 
     Question mockQuestion = new Question();
@@ -327,7 +324,7 @@ class QuizServiceTest {
   void createFullQuizWithoutTransaction_TooManyQuestions_ThrowsException() {
     List<QuestionRequest> questions = new ArrayList<>();
     for (int i = 0; i < 11; i++) {
-      questions.add(new QuestionRequest("Q" + i, "SINGLE", 10, List.of()));
+      questions.add(new QuestionRequest("Q" + i, "SINGLE", 10, List.of(), null));
     }
     FullQuizRequest fullRequest = new FullQuizRequest(testRequest, questions);
 
@@ -525,10 +522,8 @@ class QuizServiceTest {
     verify(cacheService).invalidate();
   }
 
-  // ==================== BULK ОПЕРАЦИИ ====================
-
   @Test
-  void createQuizzesBulk_Success_AllSaved() {
+  void createQuizzesBulk_Success_ReturnsListOfResponses() {
     List<QuizRequest> requests = List.of(testRequest, testRequest);
 
     when(userRepository.findByUsername("admin")).thenReturn(Optional.of(testUser));
@@ -541,7 +536,7 @@ class QuizServiceTest {
     assertNotNull(result);
     assertEquals(2, result.size());
     verify(quizRepository, times(2)).save(any(Quiz.class));
-    verify(cacheService).invalidate();
+    verify(cacheService, times(1)).invalidate();
   }
 
   @Test
@@ -592,5 +587,6 @@ class QuizServiceTest {
     });
 
     verify(quizRepository, times(2)).save(any(Quiz.class));
+    verify(cacheService, never()).invalidate();
   }
 }

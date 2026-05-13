@@ -1,38 +1,30 @@
 package com.example.onlinetest.model;
 
-import lombok.ToString;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.HashSet;
-import java.util.Set;
-import lombok.EqualsAndHashCode;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "tags")
-@EqualsAndHashCode(exclude = {"quizzes"})
 public class Tag {
 
-    @Id
+  @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-    @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true)
   private String name;
 
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private Set<Quiz> quizzes = new HashSet<>();
+  @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+  private List<Quiz> quizzes = new ArrayList<>();
 
+  public Tag(String name) {
+    this.name = name;
+  }
 }
