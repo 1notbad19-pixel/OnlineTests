@@ -2,12 +2,15 @@ package com.example.onlinetest.service;
 
 import com.example.onlinetest.dto.AsyncTaskAcceptedResponseDto;
 import com.example.onlinetest.dto.AsyncTaskStatusDto;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,20 +24,30 @@ public class AsyncTaskService {
     private final Map<String, TaskInfo> tasks = new ConcurrentHashMap<>();
 
     public AsyncTaskAcceptedResponseDto startTask(long durationMs) {
+        if (durationMs <= 0) {
+            throw new IllegalArgumentException("durationMs must be greater than 0");
+        }
+
         String taskId = UUID.randomUUID().toString();
 
         TaskInfo taskInfo = new TaskInfo(taskId, "PENDING", LocalDateTime.now());
         tasks.put(taskId, taskInfo);
 
-        // ← Этот код правильный
         CompletableFuture<String> future = asyncTaskProcessor.runTask(durationMs);
+
+        taskInfo.setStatus("RUNNING");
+        taskInfo.setStartedAt(LocalDateTime.now());
 
         future.whenComplete((result, error) -> {
             if (error != null) {
-                tasks.put(taskId, new TaskInfo(taskId, "FAILED", LocalDateTime.now(), error.getMessage()));
-                log.error("Задача {} завершилась ошибкой", taskId);
+                taskInfo.setStatus("FAILED");
+                taskInfo.setErrorMessage(error.getMessage());
+                taskInfo.setCompletedAt(LocalDateTime.now());
+                log.error("Задача {} завершилась ошибкой: {}", taskId, error.getMessage());
             } else {
-                tasks.put(taskId, new TaskInfo(taskId, "COMPLETED", LocalDateTime.now()));
+                taskInfo.setStatus("COMPLETED");
+                taskInfo.setCompletedAt(LocalDateTime.now());
+                taskInfo.setProcessedItems(1);
                 log.info("Задача {} успешно завершена", taskId);
             }
         });
@@ -45,43 +58,35 @@ public class AsyncTaskService {
     public AsyncTaskStatusDto getTaskStatus(String taskId) {
         TaskInfo taskInfo = tasks.get(taskId);
         if (taskInfo == null) {
-            throw new RuntimeException("Task not found: " + taskId);
+            throw new NoSuchElementException("Task not found: " + taskId);
         }
 
         return new AsyncTaskStatusDto(
             taskInfo.getTaskId(),
             taskInfo.getStatus(),
             taskInfo.getCreatedAt(),
-            null,
+            taskInfo.getStartedAt(),
             taskInfo.getCompletedAt(),
-            null,
+            taskInfo.getProcessedItems(),
             taskInfo.getErrorMessage()
         );
     }
 
+    @Getter
+    @Setter
     private static class TaskInfo {
         private final String taskId;
-        private final String status;
         private final LocalDateTime createdAt;
-        private final LocalDateTime completedAt;
-        private final String errorMessage;
+        private String status;
+        private LocalDateTime startedAt;
+        private LocalDateTime completedAt;
+        private Integer processedItems;
+        private String errorMessage;
 
-        public TaskInfo(String taskId, String status, LocalDateTime timestamp) {
-            this(taskId, status, timestamp, null);
-        }
-
-        public TaskInfo(String taskId, String status, LocalDateTime timestamp, String errorMessage) {
+        public TaskInfo(String taskId, String status, LocalDateTime createdAt) {
             this.taskId = taskId;
             this.status = status;
-            this.createdAt = timestamp;
-            this.completedAt = "COMPLETED".equals(status) || "FAILED".equals(status) ? timestamp : null;
-            this.errorMessage = errorMessage;
+            this.createdAt = createdAt;
         }
-
-        public String getTaskId() { return taskId; }
-        public String getStatus() { return status; }
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public LocalDateTime getCompletedAt() { return completedAt; }
-        public String getErrorMessage() { return errorMessage; }
     }
 }

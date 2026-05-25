@@ -7,14 +7,14 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class AsyncTaskProcessor {
 
-  @Async
+    @Async
   public CompletableFuture<String> runTask(long durationMs) {
-    try {
-      Thread.sleep(durationMs);
-      return CompletableFuture.completedFuture("SUCCESS");
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      return CompletableFuture.failedFuture(new RuntimeException("Task was interrupted", ex));
+        try {
+            Thread.sleep(durationMs);
+            return CompletableFuture.completedFuture("SUCCESS");
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(new RuntimeException("Task was interrupted", ex));
+        }
     }
-  }
 }
