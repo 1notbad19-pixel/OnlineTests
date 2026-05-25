@@ -1,0 +1,6 @@
+title,category,timeLimitMinutes,maxAttempts,isPublished,passingScore,tags
+Load Test Quiz 1,Programming,30,3,true,70,jmeter
+Load Test Quiz 2,Programming,30,3,true,70,jmeter
+Load Test Quiz 3,Programming,30,3,true,70,jmeter
+Load Test Quiz 4,Programming,30,3,true,70,jmeter
+Load Test Quiz 5,Programming,30,3,true,70,jmeter
