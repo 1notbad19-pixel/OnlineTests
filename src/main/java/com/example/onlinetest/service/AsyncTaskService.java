@@ -8,111 +8,80 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RejectedExecutionException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsyncTaskService {
 
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_RUNNING = "RUNNING";
-    private static final String STATUS_COMPLETED = "COMPLETED";
-    private static final String STATUS_FAILED = "FAILED";
-
     private final AsyncTaskProcessor asyncTaskProcessor;
-    private final Map<String, TaskState> tasks = new ConcurrentHashMap<>();
+    private final Map<String, TaskInfo> tasks = new ConcurrentHashMap<>();
 
     public AsyncTaskAcceptedResponseDto startTask(long durationMs) {
-        if (durationMs <= 0) {
-            throw new IllegalArgumentException("durationMs must be > 0");
-        }
-
         String taskId = UUID.randomUUID().toString();
-        TaskState taskState = new TaskState();
-        tasks.put(taskId, taskState);
 
-        try {
-            CompletableFuture<Void> taskFuture = asyncTaskProcessor.runTask(durationMs);
-            taskState.markRunning();
+        TaskInfo taskInfo = new TaskInfo(taskId, "PENDING", LocalDateTime.now());
+        tasks.put(taskId, taskInfo);
 
-            taskFuture.whenComplete((result, error) -> {
-                if (error != null) {
-                    taskState.markFailed(extractErrorMessage(error));
-                    log.error("Задача {} завершилась с ошибкой: {}", taskId, error.getMessage());
-                    return;
-                }
-                taskState.markCompleted();
+        // ← Этот код правильный
+        CompletableFuture<String> future = asyncTaskProcessor.runTask(durationMs);
+
+        future.whenComplete((result, error) -> {
+            if (error != null) {
+                tasks.put(taskId, new TaskInfo(taskId, "FAILED", LocalDateTime.now(), error.getMessage()));
+                log.error("Задача {} завершилась ошибкой", taskId);
+            } else {
+                tasks.put(taskId, new TaskInfo(taskId, "COMPLETED", LocalDateTime.now()));
                 log.info("Задача {} успешно завершена", taskId);
-            });
-        } catch (RejectedExecutionException ex) {
-            tasks.remove(taskId);
-            throw ex;
-        }
+            }
+        });
 
         return new AsyncTaskAcceptedResponseDto(taskId);
     }
 
     public AsyncTaskStatusDto getTaskStatus(String taskId) {
-        TaskState taskState = Optional.ofNullable(tasks.get(taskId))
-            .orElseThrow(() -> new NoSuchElementException("Task not found: " + taskId));
-        return taskState.toStatusDto(taskId);
+        TaskInfo taskInfo = tasks.get(taskId);
+        if (taskInfo == null) {
+            throw new RuntimeException("Task not found: " + taskId);
+        }
+
+        return new AsyncTaskStatusDto(
+            taskInfo.getTaskId(),
+            taskInfo.getStatus(),
+            taskInfo.getCreatedAt(),
+            null,
+            taskInfo.getCompletedAt(),
+            null,
+            taskInfo.getErrorMessage()
+        );
     }
 
-    private String extractErrorMessage(Throwable throwable) {
-        Throwable rootCause = throwable;
-        while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
-            rootCause = rootCause.getCause();
+    private static class TaskInfo {
+        private final String taskId;
+        private final String status;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime completedAt;
+        private final String errorMessage;
+
+        public TaskInfo(String taskId, String status, LocalDateTime timestamp) {
+            this(taskId, status, timestamp, null);
         }
 
-        return Optional.ofNullable(rootCause.getMessage())
-        .filter(message -> !message.isBlank())
-        .orElse(rootCause.getClass().getSimpleName());
-    }
-
-    private static final class TaskState {
-
-        private final LocalDateTime createdAt = LocalDateTime.now();
-        private String status = STATUS_PENDING;
-        private LocalDateTime startedAt;
-        private LocalDateTime completedAt;
-        private Integer processedItems;
-        private String errorMessage;
-
-        private synchronized void markRunning() {
-            status = STATUS_RUNNING;
-            startedAt = LocalDateTime.now();
-            errorMessage = null;
+        public TaskInfo(String taskId, String status, LocalDateTime timestamp, String errorMessage) {
+            this.taskId = taskId;
+            this.status = status;
+            this.createdAt = timestamp;
+            this.completedAt = "COMPLETED".equals(status) || "FAILED".equals(status) ? timestamp : null;
+            this.errorMessage = errorMessage;
         }
 
-        private synchronized void markCompleted() {
-            status = STATUS_COMPLETED;
-            completedAt = LocalDateTime.now();
-            processedItems = 1;
-            errorMessage = null;
-        }
-
-        private synchronized void markFailed(String message) {
-            status = STATUS_FAILED;
-            completedAt = LocalDateTime.now();
-            errorMessage = message;
-        }
-
-        private synchronized AsyncTaskStatusDto toStatusDto(String taskId) {
-            return new AsyncTaskStatusDto(
-                taskId,
-                status,
-                createdAt,
-                startedAt,
-                completedAt,
-                processedItems,
-                errorMessage
-      );
-        }
+        public String getTaskId() { return taskId; }
+        public String getStatus() { return status; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public LocalDateTime getCompletedAt() { return completedAt; }
+        public String getErrorMessage() { return errorMessage; }
     }
 }
