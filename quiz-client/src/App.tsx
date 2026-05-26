@@ -1,122 +1,121 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useEffect, useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [quizzes, setQuizzes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    timeLimitMinutes: 30,
+    maxAttempts: 3,
+    isPublished: true,
+    passingScore: 70,
+    tags: ''
+  });
+
+  // Загрузка квизов
+  const loadQuizzes = () => {
+    setLoading(true);
+    fetch('http://localhost:8080/api/quizzes')
+      .then(res => res.json())
+      .then(data => {
+        setQuizzes(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadQuizzes();
+  }, []);
+
+  // Создание квиза
+  const createQuiz = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
+    };
+
+    fetch('http://localhost:8080/api/quizzes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(() => {
+        setShowForm(false);
+        setFormData({
+          title: '', description: '', category: '', timeLimitMinutes: 30,
+          maxAttempts: 3, isPublished: true, passingScore: 70, tags: ''
+        });
+        loadQuizzes();
+      })
+      .catch(err => alert('Ошибка: ' + err.message));
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ padding: 20 }}>
+      <h1>Online Test</h1>
+      <button onClick={() => setShowForm(!showForm)} style={{ marginBottom: 20, padding: '10px 20px', cursor: 'pointer' }}>
+        {showForm ? 'Отмена' : '+ Создать квиз'}
+      </button>
 
-      <div className="ticks"></div>
+      {showForm && (
+        <form onSubmit={createQuiz} style={{ border: '1px solid #ccc', padding: 20, borderRadius: 8, marginBottom: 20 }}>
+          <h2>Новый квиз</h2>
+          <div style={{ marginBottom: 10 }}>
+            <input name="title" placeholder="Название *" value={formData.title} onChange={handleChange} required style={{ width: '100%', padding: 8 }} />
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <input name="description" placeholder="Описание" value={formData.description} onChange={handleChange} style={{ width: '100%', padding: 8 }} />
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <input name="category" placeholder="Категория *" value={formData.category} onChange={handleChange} required style={{ width: '100%', padding: 8 }} />
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+            <input name="timeLimitMinutes" type="number" placeholder="Время (мин)" value={formData.timeLimitMinutes} onChange={handleChange} style={{ width: '33%', padding: 8 }} />
+            <input name="maxAttempts" type="number" placeholder="Макс попыток" value={formData.maxAttempts} onChange={handleChange} style={{ width: '33%', padding: 8 }} />
+            <input name="passingScore" type="number" placeholder="Проходной балл" value={formData.passingScore} onChange={handleChange} style={{ width: '33%', padding: 8 }} />
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <input name="tags" placeholder="Теги (через запятую)" value={formData.tags} onChange={handleChange} style={{ width: '100%', padding: 8 }} />
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <label>
+              <input name="isPublished" type="checkbox" checked={formData.isPublished} onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })} />
+              Опубликовать
+            </label>
+          </div>
+          <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Сохранить</button>
+        </form>
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      <h2>Список квизов ({quizzes.length})</h2>
+      {quizzes.length === 0 && <p>Нет квизов. Создайте первый!</p>}
+      {quizzes.map(quiz => (
+        <div key={quiz.id} style={{ border: '1px solid #ddd', padding: 15, marginBottom: 10, borderRadius: 8 }}>
+          <h3>{quiz.title}</h3>
+          <p>{quiz.description}</p>
+          <p>Категория: {quiz.category} | Время: {quiz.timeLimitMinutes} мин | Вопросов: {quiz.questionCount || 0}</p>
+          {quiz.tags?.map(tag => <span key={tag} style={{ background: '#eee', padding: '2px 8px', borderRadius: 12, marginRight: 8 }}>#{tag}</span>)}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
