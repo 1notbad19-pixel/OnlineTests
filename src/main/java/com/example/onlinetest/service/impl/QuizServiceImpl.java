@@ -26,6 +26,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -58,8 +61,27 @@ public class QuizServiceImpl implements QuizService {
 
   @Override
   @Transactional
-  public QuizResponse createQuiz(QuizRequest request) {
-    return createQuizInternal(request);
+  public QuizResponse createQuiz(QuizRequest request, Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+    Quiz quiz = quizMapper.toEntity(request);
+    quiz.setCreatedBy(user);
+
+    if (request.tags() != null && !request.tags().isEmpty()) {
+      List<Tag> processedTags = request.tags().stream()
+          .map(tagName -> tagRepository.findByName(tagName)
+              .orElseGet(() -> {
+                Tag newTag = new Tag();
+                newTag.setName(tagName);
+                return tagRepository.save(newTag);
+              }))
+          .toList();
+      quiz.setTags(new HashSet<>(processedTags));
+    }
+
+    Quiz savedQuiz = quizRepository.save(quiz);
+    return quizMapper.toResponse(savedQuiz);
   }
 
   @Override
@@ -178,6 +200,42 @@ public class QuizServiceImpl implements QuizService {
   }
 
   @Override
+  @Transactional
+  public QuizResponse updateQuiz(Long id, QuizRequest request) {
+    log.info("Updating quiz with id: {}", id);
+
+    Quiz quiz = quizRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Quiz not found with id: " + id));
+
+    quiz.setTitle(request.title());
+    quiz.setDescription(request.description());
+    quiz.setCategory(request.category());
+    quiz.setTimeLimitMinutes(request.timeLimitMinutes());
+    quiz.setMaxAttempts(request.maxAttempts());
+    quiz.setIsPublished(request.isPublished() != null ? request.isPublished() : false);
+    quiz.setPassingScore(request.passingScore());
+    quiz.setUpdatedAt(LocalDateTime.now());
+
+    if (request.tags() != null) {
+      Set<Tag> tags = request.tags().stream()
+          .map(tagName -> tagRepository.findByName(tagName)
+              .orElseGet(() -> {
+                Tag newTag = new Tag();
+                newTag.setName(tagName);
+                return tagRepository.save(newTag);
+              }))
+          .collect(Collectors.toSet());
+      quiz.setTags(tags);
+    }
+
+    Quiz updatedQuiz = quizRepository.save(quiz);
+    cacheService.invalidate();
+    log.info("Quiz updated successfully with id: {}", updatedQuiz.getId());
+
+    return quizMapper.toResponse(updatedQuiz);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public Page<QuizResponse> getQuizzesWithFiltersNative(String category,
       Boolean published, Integer minQuestions, Pageable pageable) {
@@ -203,19 +261,6 @@ public class QuizServiceImpl implements QuizService {
     cacheService.put(key, responsePage);
 
     return responsePage;
-  }
-
-  @Override
-  @Transactional
-  public QuizResponse updateQuiz(Long id, QuizRequest request) {
-    Quiz quiz = quizRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException(
-            QUIZ_NOT_FOUND_MSG + id));
-    quizMapper.update(quiz, request);
-    Quiz updatedQuiz = quizRepository.save(quiz);
-    log.info("Инвалидация кэша после обновления квиза ID: {}", id);
-    cacheService.invalidate();
-    return quizMapper.toResponse(updatedQuiz);
   }
 
   @Override

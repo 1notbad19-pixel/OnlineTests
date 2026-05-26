@@ -31,6 +31,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.example.onlinetest.exception.ErrorResponse;
 import com.example.onlinetest.dto.BulkQuizCreateRequest;
+import com.example.onlinetest.repository.UserRepository;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/quizzes")
@@ -42,6 +44,7 @@ public class QuizController {
 
     private final QuizService quizService;
     private final QuizCacheService cacheService;
+  private final UserRepository userRepository;
     @Operation(summary = "Создать новый квиз", description = "Создаёт новый квиз с указанными параметрами")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Квиз успешно создан"),
@@ -50,11 +53,18 @@ public class QuizController {
         @ApiResponse(responseCode = "409", description = "Конфликт (дубликат тега)",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+
     @PostMapping
-  public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
-        QuizResponse response = quizService.createQuiz(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<QuizResponse> createQuiz(@Valid @RequestBody QuizRequest request) {
+      // Для Record используем request.createdById(), а НЕ request.getCreatedById()
+      Long userId = request.createdById();  // ← без "get"
+      if (userId == null) {
+        userId = 1L;
+      }
+      QuizResponse response = quizService.createQuiz(request, userId);
+      return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
     @Operation(summary = "Создать полный квиз", description = "Создаёт квиз с вопросами и ответами (с транзакцией)")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Квиз успешно создан"),
@@ -74,6 +84,7 @@ public class QuizController {
       @ApiResponse(responseCode = "400", description = "Неверные входные данные"),
       @ApiResponse(responseCode = "500", description = "Ошибка сервера (квиз сохранился, вопросы нет)")
   })
+
     @PostMapping("/full/without-transaction")
   public ResponseEntity<QuizResponse> createFullQuizWithoutTransaction(@Valid @RequestBody FullQuizRequest request) {
         QuizResponse response = quizService.createFullQuizWithoutTransaction(request);
@@ -183,14 +194,6 @@ public class QuizController {
         body(quizService.createQuizzesBulkWithoutTransaction(request.quizzes()));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<QuizResponse> updateQuiz(
-        @Parameter(description = "ID квиза", example = "1")
-        @PathVariable Long id,
-          @Valid @RequestBody QuizRequest request) {
-        QuizResponse response = quizService.updateQuiz(id, request);
-        return ResponseEntity.ok(response);
-    }
     @Operation(summary = "Удалить квиз по ID", description = "Удаляет квиз с указанным ID")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204", description = "Квиз удалён"),
@@ -284,4 +287,11 @@ public class QuizController {
         quizService.invalidateCache();
         return ResponseEntity.ok("Cache invalidated successfully!");
     }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<QuizResponse> updateQuiz(
+      @PathVariable Long id,
+      @Valid @RequestBody QuizRequest request) {
+    return ResponseEntity.ok(quizService.updateQuiz(id, request));
+  }
 }

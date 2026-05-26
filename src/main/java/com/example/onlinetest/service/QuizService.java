@@ -9,15 +9,17 @@ import java.util.List;
 
 public interface QuizService {
 
-    QuizResponse createQuiz(QuizRequest request);
-
     QuizResponse createFullQuiz(FullQuizRequest request);
 
     QuizResponse createFullQuizWithoutTransaction(FullQuizRequest request);
 
     QuizResponse getQuiz(Long id);
 
+    QuizResponse updateQuiz(Long id, QuizRequest request);
+
     QuizResponse getQuizWithDetails(Long id);
+
+    QuizResponse createQuiz(QuizRequest request, Long userId);
 
     List<QuizResponse> getAllQuizzes(String category, Boolean published, String tag);
 
@@ -26,8 +28,6 @@ public interface QuizService {
 
     Page<QuizResponse> getQuizzesWithFiltersNative(String category, Boolean published,
         Integer minQuestions, Pageable pageable);
-
-    QuizResponse updateQuiz(Long id, QuizRequest request);
 
     List<QuizResponse> createQuizzesBulk(List<QuizRequest> requests);
     List<QuizResponse> createQuizzesBulkWithoutTransaction(List<QuizRequest> requests);

@@ -40,7 +40,11 @@ public record QuizResponse(
     List<String> tags,
 
     @Schema(description = "Количество вопросов", example = "5")
-    Integer questionCount
-) {
+    Integer questionCount,
 
-}
+    @Schema(description = "ID создателя", example = "1")
+    Long createdById,
+
+    @Schema(description = "Имя создателя", example = "admin")
+    String createdByUsername
+) { }

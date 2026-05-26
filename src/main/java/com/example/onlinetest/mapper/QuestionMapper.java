@@ -36,6 +36,9 @@ public class QuestionMapper {
     }
 
     public QuestionResponse toResponse(Question question) {
+        if (question == null) {
+            return null;
+        }
         return new QuestionResponse(
             question.getId(),
             question.getText(),

@@ -42,7 +42,10 @@ public record QuizRequest(
     Integer passingScore,
 
     @Schema(description = "Теги", example = "[\"java\", \"programming\"]")
-    List<String> tags
+    List<String> tags,
+
+    @Schema(description = "ID создателя", example = "1")
+        Long createdById
 ) {
 
 }

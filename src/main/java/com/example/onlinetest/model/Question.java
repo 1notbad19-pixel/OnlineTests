@@ -28,6 +28,7 @@ public class Question {
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Answer> answers = new ArrayList<>();
 
+  // Конструкторы
   public Question() {}
 
   public Question(String text, String type, Integer points) {
@@ -36,6 +37,7 @@ public class Question {
     this.points = points;
   }
 
+  // Геттеры и сеттеры
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 

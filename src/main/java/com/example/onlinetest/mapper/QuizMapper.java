@@ -46,20 +46,30 @@ public class QuizMapper {
             ? quiz.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
             : new HashSet<>();
 
+        Long createdById = null;
+        String createdByUsername = null;
+
+        if (quiz.getCreatedBy() != null) {
+            createdById = quiz.getCreatedBy().getId();
+            createdByUsername = quiz.getCreatedBy().getUsername();
+        }
+
         return new QuizResponse(
-        quiz.getId(),
-        quiz.getTitle(),
-        quiz.getDescription(),
-        quiz.getCategory(),
-        quiz.getTimeLimitMinutes(),
-        quiz.getMaxAttempts(),
-        quiz.getIsPublished(),
-        quiz.getPassingScore(),
-        quiz.getCreatedAt(),
-        quiz.getUpdatedAt(),
-        tagNames.stream().toList(),
-        quiz.getQuestions() != null ? quiz.getQuestions().size() : 0
-    );
+            quiz.getId(),
+            quiz.getTitle(),
+            quiz.getDescription(),
+            quiz.getCategory(),
+            quiz.getTimeLimitMinutes(),
+            quiz.getMaxAttempts(),
+            quiz.getIsPublished(),
+            quiz.getPassingScore(),
+            quiz.getCreatedAt(),
+            quiz.getUpdatedAt(),
+            tagNames.stream().toList(),
+            quiz.getQuestions() != null ? quiz.getQuestions().size() : 0,
+            createdById,
+            createdByUsername
+        );
     }
 
     public void update(Quiz quiz, QuizRequest request) {
