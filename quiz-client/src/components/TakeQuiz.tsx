@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface Question {
   id: number;
@@ -29,6 +30,7 @@ interface TakeQuizProps {
 }
 
 const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
+  const { theme } = useTheme();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,25 +170,25 @@ const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
   };
 
   if (loading) return <div style={{ padding: 50, textAlign: 'center' }}>Загрузка теста...</div>;
-  if (error) return <div style={{ padding: 50, textAlign: 'center', color: 'red' }}>{error}</div>;
+  if (error) return <div style={{ padding: 50, textAlign: 'center', color: 'var(--error-color)' }}>{error}</div>;
   if (!quiz) return <div>Тест не найден</div>;
 
   if (finished && score) {
     return (
-      <div style={{ maxWidth: 600, margin: '50px auto', padding: 30, backgroundColor: 'white', borderRadius: 8, textAlign: 'center' }}>
+      <div className="google-card" style={{ maxWidth: 600, margin: '50px auto', padding: 30, textAlign: 'center' }}>
         <h1>Результаты теста</h1>
         <h2>{quiz.title}</h2>
-        <div style={{ fontSize: 48, margin: 30 }}>
+        <div style={{ fontSize: 48, margin: 30, color: score.percentage >= 70 ? 'var(--success-color)' : 'var(--error-color)' }}>
           {score.percentage}%
         </div>
         <p>Правильных ответов: {score.correct} из {score.total}</p>
         <p>Набранные баллы: {score.percentage}%</p>
         {score.percentage >= 70 ? (
-          <div style={{ color: 'green' }}> Поздравляем! Тест пройден!</div>
+          <div style={{ color: 'var(--success-color)' }}>✅ Поздравляем! Тест пройден!</div>
         ) : (
-          <div style={{ color: 'red' }}> Тест не пройден. Попробуйте еще раз!</div>
+          <div style={{ color: 'var(--error-color)' }}>❌ Тест не пройден. Попробуйте еще раз!</div>
         )}
-        <button onClick={onFinish} style={{ marginTop: 30, padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+        <button onClick={onFinish} className="google-btn-primary" style={{ marginTop: 30, padding: '10px 20px' }}>
           Закрыть
         </button>
       </div>
@@ -199,62 +201,45 @@ const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 20 }}>
-      {/* Модальное окно подтверждения */}
       {showConfirm && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', borderRadius: 8, padding: 30, textAlign: 'center', maxWidth: 400 }}>
+          <div className="google-card" style={{ padding: 30, textAlign: 'center', maxWidth: 400 }}>
             <h3>Выйти из теста?</h3>
             <p>Весь прогресс будет потерян. Вы уверены?</p>
             <div style={{ display: 'flex', gap: 15, justifyContent: 'center', marginTop: 20 }}>
-              <button onClick={() => setShowConfirm(false)} style={{ padding: '8px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-                Продолжить
-              </button>
-              <button onClick={confirmCancel} style={{ padding: '8px 20px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-                Выйти
-              </button>
+              <button onClick={() => setShowConfirm(false)} className="google-btn-secondary">Продолжить</button>
+              <button onClick={confirmCancel} className="google-btn-danger">Выйти</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, padding: 15, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
-        <div>
-          <h2>{quiz.title}</h2>
-          <p>Вопрос {currentQuestionIndex + 1} из {questions.length}</p>
+      <div className="google-card" style={{ padding: 20, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <h2>{quiz.title}</h2>
+            <p>Вопрос {currentQuestionIndex + 1} из {questions.length}</p>
+          </div>
+          <div style={{ display: 'flex', gap: 15, alignItems: 'center' }}>
+            {timeLeft !== null && (
+              <div style={{ fontSize: 24, fontWeight: 'bold', color: timeLeft < 60 ? 'var(--error-color)' : 'var(--text-primary)' }}>
+                ⏱️ {formatTime(timeLeft)}
+              </div>
+            )}
+            <button onClick={handleCancel} className="google-btn-danger">✕ Выйти</button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 15, alignItems: 'center' }}>
-          {timeLeft !== null && (
-            <div style={{ fontSize: 24, fontWeight: 'bold', color: timeLeft < 60 ? 'red' : '#333' }}>
-              ⏱️ {formatTime(timeLeft)}
-            </div>
-          )}
-          <button
-            onClick={handleCancel}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 14
-            }}
-          >
-            ✕ Выйти
-          </button>
+
+        <div style={{ width: '100%', height: 8, backgroundColor: 'var(--bg-hover)', borderRadius: 4, marginTop: 15 }}>
+          <div style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`, height: 8, backgroundColor: 'var(--primary-color)', borderRadius: 4 }} />
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div style={{ width: '100%', height: 8, backgroundColor: '#e0e0e0', borderRadius: 4, marginBottom: 30 }}>
-        <div style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`, height: 8, backgroundColor: '#007bff', borderRadius: 4 }} />
-      </div>
-
-      {/* Question */}
-      <div style={{ backgroundColor: 'white', borderRadius: 8, padding: 30, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+      <div className="google-card" style={{ padding: 30 }}>
         <h3>{currentQuestion?.text}</h3>
-        <p style={{ color: '#666', fontSize: 14 }}>Тип: {isMultiple ? 'Множественный выбор' : 'Одиночный выбор'} | Баллов: {currentQuestion?.points}</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 10 }}>
+          Тип: {isMultiple ? 'Множественный выбор' : 'Одиночный выбор'} | Баллов: {currentQuestion?.points}
+        </p>
 
         <div style={{ marginTop: 30 }}>
           {currentQuestion?.answers.map((answer) => (
@@ -262,36 +247,28 @@ const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
               key={answer.id}
               onClick={() => handleAnswerSelect(currentQuestion.id, answer.id, isMultiple)}
               style={{
-                padding: 12,
+                padding: 14,
                 marginBottom: 10,
-                backgroundColor: isAnswerSelected(currentQuestion.id, answer.id) ? '#e3f2fd' : '#f9f9f9',
-                border: isAnswerSelected(currentQuestion.id, answer.id) ? '2px solid #007bff' : '1px solid #ddd',
-                borderRadius: 8,
+                backgroundColor: isAnswerSelected(currentQuestion.id, answer.id) ? 'rgba(26, 115, 232, 0.1)' : 'var(--bg-hover)',
+                border: isAnswerSelected(currentQuestion.id, answer.id) ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                borderRadius: 12,
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
             >
               {isAnswerSelected(currentQuestion.id, answer.id) && (
-                <span style={{ marginRight: 10, color: '#007bff' }}>✓</span>
+                <span style={{ marginRight: 10, color: 'var(--primary-color)' }}>✓</span>
               )}
               {answer.text}
             </div>
           ))}
         </div>
 
-        {/* Navigation buttons */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 30 }}>
           <button
             onClick={goToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: currentQuestionIndex === 0 ? '#ccc' : '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: 4,
-              cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer'
-            }}
+            className="google-btn-secondary"
           >
             ← Назад
           </button>
@@ -299,14 +276,7 @@ const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
           <button
             onClick={goToNextQuestion}
             disabled={!hasCurrentAnswer}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: !hasCurrentAnswer ? '#ccc' : (currentQuestionIndex === questions.length - 1 ? '#28a745' : '#007bff'),
-              color: 'white',
-              border: 'none',
-              borderRadius: 4,
-              cursor: !hasCurrentAnswer ? 'not-allowed' : 'pointer'
-            }}
+            className={currentQuestionIndex === questions.length - 1 ? 'google-btn-primary' : 'google-btn-primary'}
           >
             {currentQuestionIndex === questions.length - 1 ? 'Завершить' : 'Далее →'}
           </button>

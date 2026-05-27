@@ -10,6 +10,8 @@ interface Quiz {
   isPublished: boolean;
   tags: string[];
   questionCount: number;
+  createdById?: number;
+  createdByUsername?: string;
 }
 
 interface QuizListProps {
@@ -80,7 +82,7 @@ const QuizList: React.FC<QuizListProps> = ({
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 20 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}> Все тесты</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>📋 Все тесты</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>Исследуйте тесты от всех пользователей</p>
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -104,7 +106,7 @@ const QuizList: React.FC<QuizListProps> = ({
       </div>
 
       {filteredQuizzes.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 50, backgroundColor: 'var(--bg-card)', borderRadius: 8 }}>
+        <div className="google-card" style={{ textAlign: 'center', padding: 50 }}>
           <p>Тесты не найдены</p>
         </div>
       )}
@@ -113,14 +115,7 @@ const QuizList: React.FC<QuizListProps> = ({
         const isFavorite = favorites.includes(quiz.id);
 
         return (
-          <div key={quiz.id} style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 12,
-            padding: 20,
-            marginBottom: 16,
-            transition: 'all 0.2s'
-          }}>
+          <div key={quiz.id} className="quiz-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -136,28 +131,30 @@ const QuizList: React.FC<QuizListProps> = ({
                 </div>
                 <p style={{ color: 'var(--text-secondary)', margin: '10px 0' }}>{quiz.description}</p>
                 <div style={{ display: 'flex', gap: 15, fontSize: 14, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                  <span> {quiz.category}</span>
-                  <span> {quiz.timeLimitMinutes} мин</span>
-                  <span> {quiz.questionCount} вопросов</span>
-                  <span>{quiz.isPublished ? ' Опубликован' : ' Черновик'}</span>
+                  <span>📂 {quiz.category}</span>
+                  <span>⏱️ {quiz.timeLimitMinutes} мин</span>
+                  <span>📝 {quiz.questionCount} вопросов</span>
+                  <span className={quiz.isPublished ? 'status-published' : 'status-draft'}>
+                    {quiz.isPublished ? '✅ Опубликован' : '📝 Черновик'}
+                  </span>
                 </div>
                 <div style={{ marginTop: 10 }}>
-                  {quiz.tags?.map(tag => <span key={tag} style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: 12, fontSize: 12, marginRight: 8 }}>#{tag}</span>)}
+                  {quiz.tags?.map(tag => <span key={tag} className="tag">#{tag}</span>)}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={() => onView(quiz.id)} className="google-btn-primary" style={{ padding: '6px 12px' }}>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button onClick={() => onView(quiz.id)} className="google-btn-primary" style={{ padding: '8px 20px', fontSize: '14px' }}>
                   Просмотр
                 </button>
                 {onTakeQuiz && (
-                  <button onClick={() => onTakeQuiz(quiz.id)} className="google-btn-primary" style={{ padding: '6px 12px', backgroundColor: '#17a2b8' }}>
+                  <button onClick={() => onTakeQuiz(quiz.id)} className="google-btn-primary" style={{ padding: '8px 20px', fontSize: '14px' }}>
                     Пройти
                   </button>
                 )}
-                <button onClick={() => onEdit(quiz.id)} className="google-btn-warning" style={{ padding: '6px 12px' }}>
+                <button onClick={() => onEdit(quiz.id)} className="google-btn-warning" style={{ padding: '8px 20px', fontSize: '14px' }}>
                   Редактировать
                 </button>
-                <button onClick={() => handleDelete(quiz.id)} className="google-btn-danger" style={{ padding: '6px 12px' }}>
+                <button onClick={() => handleDelete(quiz.id)} className="google-btn-danger" style={{ padding: '8px 20px', fontSize: '14px' }}>
                   Удалить
                 </button>
               </div>

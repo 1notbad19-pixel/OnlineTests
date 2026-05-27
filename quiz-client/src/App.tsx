@@ -159,8 +159,8 @@ function App() {
     <div className="fade-in">
       <nav className="google-navbar">
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <h2 style={{ margin: 0, cursor: 'pointer', fontSize: 22, fontWeight: 'bold', fontFamily: 'Arial, sans-serif' }} onClick={() => setCurrentView('list')}>
-             Online Tests
+          <h2 style={{ margin: 0, cursor: 'pointer', fontSize: 22, fontWeight: 500 }} onClick={() => setCurrentView('list')}>
+             Online Test
           </h2>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -206,12 +206,10 @@ function App() {
           onTakeQuiz={handleTakeQuiz}
           onAddToFavorites={handleAddToFavorites}
           favorites={favorites}
-          currentUserId={user?.id}
         />
       )}
       {currentView === 'favorites' && (
         <Favorites
-          currentUserId={user?.id}
           onTakeQuiz={handleTakeQuiz}
           favorites={favorites}
           onRemoveFromFavorites={handleAddToFavorites}
@@ -228,14 +226,13 @@ function App() {
           quizId={selectedQuizId}
           onBack={handleBack}
           onEdit={() => handleEdit(selectedQuizId)}
-          currentUserId={user?.id}
         />
       )}
     </div>
   );
 }
 
-// Компонент логина
+// Компонент логина с улучшенными полями
 function LoginForm({ onLogin, onSwitch }: { onLogin: (username: string, password: string) => Promise<void>; onSwitch: () => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -256,15 +253,60 @@ function LoginForm({ onLogin, onSwitch }: { onLogin: (username: string, password
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
       {error && <div style={{ color: 'var(--error-color)', padding: '12px', backgroundColor: 'rgba(217,48,37,0.1)', borderRadius: 8, marginBottom: 20 }}>{error}</div>}
       <div style={{ marginBottom: 16 }}>
-        <input type="text" placeholder="Имя пользователя" value={username} onChange={e => setUsername(e.target.value)} required className="google-input" />
+        <input
+          type="text"
+          placeholder="Имя пользователя"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            fontSize: '16px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            backgroundColor: 'var(--input-bg)',
+            color: 'var(--text-primary)',
+            boxSizing: 'border-box'
+          }}
+        />
       </div>
       <div style={{ marginBottom: 24 }}>
-        <input type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required className="google-input" />
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            fontSize: '16px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            backgroundColor: 'var(--input-bg)',
+            color: 'var(--text-primary)',
+            boxSizing: 'border-box'
+          }}
+        />
       </div>
-      <button type="submit" disabled={loading} className="google-btn google-btn-primary" style={{ width: '100%', padding: '12px' }}>
+      <button
+        type="submit"
+        disabled={loading}
+        style={{
+          width: '100%',
+          padding: '14px',
+          fontSize: '16px',
+          backgroundColor: 'var(--button-bg-primary)',
+          color: 'var(--button-text)',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer'
+        }}
+      >
         {loading ? 'Вход...' : 'Войти'}
       </button>
       <div style={{ textAlign: 'center', marginTop: 20 }}>
@@ -276,7 +318,7 @@ function LoginForm({ onLogin, onSwitch }: { onLogin: (username: string, password
   );
 }
 
-// Компонент регистрации
+// Компонент регистрации с именем и фамилией в одной строке
 function RegisterForm({ onRegister, onSwitch }: { onRegister: (data: any) => Promise<void>; onSwitch: () => void }) {
   const [formData, setFormData] = useState({ username: '', email: '', password: '', confirmPassword: '', firstName: '', lastName: '' });
   const [error, setError] = useState('');
@@ -301,27 +343,86 @@ function RegisterForm({ onRegister, onSwitch }: { onRegister: (data: any) => Pro
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
       {error && <div style={{ color: 'var(--error-color)', padding: '12px', backgroundColor: 'rgba(217,48,37,0.1)', borderRadius: 8, marginBottom: 20 }}>{error}</div>}
+
       <div style={{ marginBottom: 16 }}>
-        <input name="username" placeholder="Имя пользователя" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} required className="google-input" />
+        <input
+          name="username"
+          placeholder="Имя пользователя"
+          value={formData.username}
+          onChange={e => setFormData({ ...formData, username: e.target.value })}
+          required
+          className="google-input"
+          style={{ width: '100%' }}
+        />
       </div>
+
       <div style={{ marginBottom: 16 }}>
-        <input name="email" type="email" placeholder="Email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required className="google-input" />
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={e => setFormData({ ...formData, email: e.target.value })}
+          required
+          className="google-input"
+          style={{ width: '100%' }}
+        />
       </div>
+
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <input name="firstName" placeholder="Имя" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="google-input" />
-        <input name="lastName" placeholder="Фамилия" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="google-input" />
+        <input
+          name="firstName"
+          placeholder="Имя"
+          value={formData.firstName}
+          onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+          className="google-input"
+          style={{ flex: 1 }}
+        />
+        <input
+          name="lastName"
+          placeholder="Фамилия"
+          value={formData.lastName}
+          onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+          className="google-input"
+          style={{ flex: 1 }}
+        />
       </div>
+
       <div style={{ marginBottom: 16 }}>
-        <input type="password" placeholder="Пароль" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required className="google-input" />
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={formData.password}
+          onChange={e => setFormData({ ...formData, password: e.target.value })}
+          required
+          className="google-input"
+          style={{ width: '100%' }}
+        />
       </div>
+
       <div style={{ marginBottom: 24 }}>
-        <input type="password" placeholder="Подтверждение пароля" value={formData.confirmPassword} onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })} required className="google-input" />
+        <input
+          type="password"
+          placeholder="Подтверждение пароля"
+          value={formData.confirmPassword}
+          onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+          required
+          className="google-input"
+          style={{ width: '100%' }}
+        />
       </div>
-      <button type="submit" disabled={loading} className="google-btn google-btn-primary" style={{ width: '100%', padding: '12px' }}>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="google-btn-primary"
+        style={{ width: '100%', padding: '14px', fontSize: '16px' }}
+      >
         {loading ? 'Регистрация...' : 'Зарегистрироваться'}
       </button>
+
       <div style={{ textAlign: 'center', marginTop: 20 }}>
         <button type="button" onClick={onSwitch} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer' }}>
           Уже есть аккаунт? Войти
