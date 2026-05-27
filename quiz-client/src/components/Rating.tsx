@@ -46,7 +46,7 @@ const Rating: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 20 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>🏆 Рейтинг создателей тестов</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}> Рейтинг создателей тестов</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>Топ пользователей по количеству созданных квизов</p>
 
       <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-color)' }}>

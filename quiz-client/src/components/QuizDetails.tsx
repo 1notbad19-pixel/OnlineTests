@@ -81,7 +81,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ quizId, onBack, onEdit, curre
           <div>
             <strong>Статус:</strong>
             <span style={{ marginLeft: 8, color: quiz.isPublished ? 'var(--success-color)' : 'var(--warning-color)' }}>
-              {quiz.isPublished ? '✅ Опубликован' : '📝 Черновик'}
+              {quiz.isPublished ? ' Опубликован' : ' Черновик'}
             </span>
           </div>
           <div>
@@ -103,7 +103,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ quizId, onBack, onEdit, curre
 
         {isCreator && (
           <button onClick={onEdit} className="google-btn-warning" style={{ padding: '10px 20px' }}>
-            ✏️ Редактировать
+            ✏ Редактировать
           </button>
         )}
       </div>
@@ -124,7 +124,7 @@ const QuizDetails: React.FC<QuizDetailsProps> = ({ quizId, onBack, onEdit, curre
               <div style={{ marginLeft: 24 }}>
                 {q.answers?.map((a: any) => (
                   <div key={a.id} style={{ margin: '8px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {a.isCorrect ? <span style={{ color: 'var(--success-color)' }}>✅</span> : <span style={{ color: 'var(--text-secondary)' }}>○</span>}
+                    {a.isCorrect ? <span style={{ color: 'var(--success-color)' }}></span> : <span style={{ color: 'var(--text-secondary)' }}>○</span>}
                     <span style={{ color: 'var(--text-secondary)' }}>{a.text}</span>
                   </div>
                 ))}

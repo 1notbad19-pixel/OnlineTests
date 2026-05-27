@@ -76,9 +76,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
   };
 
   const removeQuestion = (index: number) => {
-    if (window.confirm('Удалить вопрос?')) {
       setQuestions(questions.filter((_, i) => i !== index));
-    }
   };
 
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
@@ -155,7 +153,16 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
     return savedQuiz.id;
   };
 
-  const saveQuestions = async (quizId: number) => {
+  const saveQuestions = async (quizIdNumber: number) => {
+    // Сначала удаляем все старые вопросы
+    const oldQuestionsRes = await fetch(`http://localhost:8080/api/questions/quiz/${quizIdNumber}`);
+    const oldQuestions = await oldQuestionsRes.json();
+
+    for (const oldQuestion of oldQuestions) {
+      await fetch(`http://localhost:8080/api/questions/${oldQuestion.id}`, { method: 'DELETE' });
+    }
+
+    // Создаем новые вопросы
     for (const question of questions) {
       if (!question.text.trim()) continue;
 
@@ -169,8 +176,11 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
           text: question.text,
           type: question.type,
           points: question.points,
-          quizId: quizId,
-          answers: question.answers
+          quizId: quizIdNumber,
+          answers: question.answers.map(a => ({
+            text: a.text,
+            isCorrect: a.isCorrect
+          }))
         })
       });
 
@@ -186,11 +196,11 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
     setError(null);
 
     try {
-      const quizId = await saveQuiz();
-      setSavedQuizId(quizId);
+      const quizIdNumber = await saveQuiz();
+      setSavedQuizId(quizIdNumber);
 
       if (questions.length > 0) {
-        await saveQuestions(quizId);
+        await saveQuestions(quizIdNumber);
       }
 
       if (onSuccess) onSuccess();
@@ -205,16 +215,16 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
       <h1>{savedQuizId ? ' Редактировать квиз' : ' Создать квиз'}</h1>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid #ddd' }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid var(--border-color)' }}>
         <button
           onClick={() => setActiveTab('info')}
           style={{
             padding: '10px 20px',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'info' ? '2px solid #007bff' : 'none',
+            borderBottom: activeTab === 'info' ? '2px solid var(--primary-color)' : 'none',
             cursor: 'pointer',
-            color: activeTab === 'info' ? '#007bff' : '#666'
+            color: activeTab === 'info' ? 'var(--primary-color)' : 'var(--text-secondary)'
           }}
         >
           Основная информация
@@ -225,9 +235,9 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
             padding: '10px 20px',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'questions' ? '2px solid #007bff' : 'none',
+            borderBottom: activeTab === 'questions' ? '2px solid var(--primary-color)' : 'none',
             cursor: 'pointer',
-            color: activeTab === 'questions' ? '#007bff' : '#666'
+            color: activeTab === 'questions' ? 'var(--primary-color)' : 'var(--text-secondary)'
           }}
         >
           Вопросы ({questions.length})
@@ -241,40 +251,26 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
           <>
             <div style={{ marginBottom: 15 }}>
               <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Название *</label>
-              <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 4 }} />
+              <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} required className="google-input" style={{ width: '100%' }} />
             </div>
 
             <div style={{ marginBottom: 15 }}>
               <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Описание</label>
-              <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 4 }} />
+              <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="google-input" style={{ width: '100%' }} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, marginBottom: 15 }}>
               <div>
                 <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Категория *</label>
-                <input type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 4 }} />
+                <input type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} required className="google-input" style={{ width: '100%' }} />
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Время (минуты)</label>
-                <input type="number" value={formData.timeLimitMinutes} onChange={e => setFormData({ ...formData, timeLimitMinutes: parseInt(e.target.value) })} min={1} style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 4 }} />
+                <input type="number" value={formData.timeLimitMinutes} onChange={e => setFormData({ ...formData, timeLimitMinutes: parseInt(e.target.value) })} min={1} className="google-input" style={{ width: '100%' }} />
               </div>
             </div>
 
-            <div style={{ marginBottom: 15 }}>
-              <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold' }}>Теги</label>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="Добавить тег" style={{ flex: 1, padding: 10, border: '1px solid #ddd', borderRadius: 4 }} />
-                <button type="button" onClick={addTag} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>+</button>
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {formData.tags.map(tag => (
-                  <span key={tag} style={{ backgroundColor: '#e9ecef', padding: '4px 12px', borderRadius: 16, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    #{tag}
-                    <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc3545', fontSize: 16 }}>×</button>
-                  </span>
-                ))}
-              </div>
-            </div>
+            {/* Теги временно отключены */}
 
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -289,22 +285,22 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
               <h3>Вопросы ({questions.length})</h3>
-              <button type="button" onClick={addQuestion} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              <button type="button" onClick={addQuestion} className="google-btn-primary" style={{ padding: '8px 16px' }}>
                 + Добавить вопрос
               </button>
             </div>
 
             {questions.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 50, backgroundColor: '#f9f9f9', borderRadius: 8 }}>
+              <div style={{ textAlign: 'center', padding: 50, backgroundColor: 'var(--bg-card)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
                 <p>Нет вопросов. Нажмите "+ Добавить вопрос"</p>
               </div>
             )}
 
             {questions.map((question, qIdx) => (
-              <div key={qIdx} style={{ border: '1px solid #ddd', padding: 15, borderRadius: 8, marginBottom: 15, backgroundColor: '#fafafa' }}>
+              <div key={qIdx} style={{ border: '1px solid var(--border-color)', padding: 15, borderRadius: 8, marginBottom: 15, backgroundColor: 'var(--bg-card)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <strong>Вопрос {qIdx + 1}</strong>
-                  <button type="button" onClick={() => removeQuestion(qIdx)} style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+                  <button type="button" onClick={() => removeQuestion(qIdx)} className="google-btn-danger" style={{ padding: '4px 12px' }}>
                     Удалить
                   </button>
                 </div>
@@ -314,14 +310,16 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
                   placeholder="Текст вопроса"
                   value={question.text}
                   onChange={e => updateQuestion(qIdx, 'text', e.target.value)}
-                  style={{ width: '100%', padding: 10, border: '1px solid #ddd', borderRadius: 4, marginBottom: 10 }}
+                  className="google-input"
+                  style={{ width: '100%', marginBottom: 10 }}
                 />
 
                 <div style={{ display: 'flex', gap: 15, marginBottom: 10 }}>
                   <select
                     value={question.type}
                     onChange={e => updateQuestion(qIdx, 'type', e.target.value)}
-                    style={{ flex: 1, padding: 10, border: '1px solid #ddd', borderRadius: 4 }}
+                    className="google-input"
+                    style={{ flex: 1 }}
                   >
                     <option value="SINGLE">Одиночный выбор</option>
                     <option value="MULTIPLE">Множественный выбор</option>
@@ -332,7 +330,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
                     value={question.points}
                     onChange={e => updateQuestion(qIdx, 'points', parseInt(e.target.value))}
                     min={1}
-                    style={{ width: 100, padding: 10, border: '1px solid #ddd', borderRadius: 4 }}
+                    className="google-input"
+                    style={{ width: 100 }}
                   />
                 </div>
 
@@ -345,7 +344,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
                         placeholder="Текст ответа"
                         value={answer.text}
                         onChange={e => updateAnswer(qIdx, aIdx, 'text', e.target.value)}
-                        style={{ flex: 1, padding: 8, border: '1px solid #ddd', borderRadius: 4 }}
+                        className="google-input"
+                        style={{ flex: 1 }}
                       />
                       <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <input
@@ -358,7 +358,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
                       <button
                         type="button"
                         onClick={() => removeAnswer(qIdx, aIdx)}
-                        style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                        className="google-btn-danger"
+                        style={{ padding: '4px 10px' }}
                       >
                         ✕
                       </button>
@@ -367,7 +368,8 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={() => addAnswer(qIdx)}
-                    style={{ marginTop: 10, padding: '5px 15px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                    className="google-btn-secondary"
+                    style={{ marginTop: 10, padding: '5px 15px' }}
                   >
                     + Добавить ответ
                   </button>
@@ -378,10 +380,10 @@ const QuizForm: React.FC<QuizFormProps> = ({ quizId, onSuccess, onCancel }) => {
         )}
 
         <div style={{ display: 'flex', gap: 15, marginTop: 30 }}>
-          <button type="submit" disabled={loading} style={{ padding: '12px 24px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+          <button type="submit" disabled={loading} className="google-btn-primary" style={{ padding: '12px 24px' }}>
             {loading ? 'Сохранение...' : (savedQuizId ? 'Обновить' : 'Создать')}
           </button>
-          <button type="button" onClick={onCancel} style={{ padding: '12px 24px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+          <button type="button" onClick={onCancel} className="google-btn-secondary" style={{ padding: '12px 24px' }}>
             Отмена
           </button>
         </div>

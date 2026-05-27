@@ -23,12 +23,18 @@
   --input-bg: #ffffff;
   --input-border: #dadce0;
   --button-text: #ffffff;
-  --button-bg-primary: #1a73e8;
-  --button-bg-danger: #dc3545;
-  --button-bg-warning: #ffc107;
-  --button-text-warning: #333;
-  --gradient-start: #667eea;
-  --gradient-end: #764ba2;
+
+  /* Приглушенные цвета для кнопок */
+  --btn-primary: #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-success: #22c55e;
+  --btn-success-hover: #16a34a;
+  --btn-warning: #eab308;
+  --btn-warning-hover: #ca8a04;
+  --btn-danger: #ef4444;
+  --btn-danger-hover: #dc2626;
+  --btn-secondary: #6b7280;
+  --btn-secondary-hover: #4b5563;
 }
 
 [data-theme="dark"] {
@@ -42,22 +48,28 @@
   --text-secondary: #9aa0a6;
   --text-disabled: #5f6368;
 
-  --bg-primary: #202124;
+  --bg-primary: #1a1a1a;
   --bg-secondary: #121212;
-  --bg-hover: #3c4043;
-  --bg-card: #2d2e32;
+  --bg-hover: #2a2a2a;
+  --bg-card: #252525;
 
-  --border-color: #5f6368;
-  --border-light: #3c4043;
-  --input-bg: #2d2e32;
-  --input-border: #5f6368;
-  --button-text: #202124;
-  --button-bg-primary: #8ab4f8;
-  --button-bg-danger: #f28b82;
-  --button-bg-warning: #fdd663;
-  --button-text-warning: #202124;
-  --gradient-start: #8ab4f8;
-  --gradient-end: #aecbfa;
+  --border-color: #3a3a3a;
+  --border-light: #333333;
+  --input-bg: #2a2a2a;
+  --input-border: #444444;
+  --button-text: #e8eaed;
+
+  /* Приглушенные цвета для кнопок в темной теме */
+  --btn-primary: #5c7c8e;
+  --btn-primary-hover: #6a8a9a;
+  --btn-success: #5c7c5c;
+  --btn-success-hover: #6a8a6a;
+  --btn-warning: #8a7c5c;
+  --btn-warning-hover: #9a8a6a;
+  --btn-danger: #8a5c5c;
+  --btn-danger-hover: #9a6a6a;
+  --btn-secondary: #5a5a6a;
+  --btn-secondary-hover: #6a6a7a;
 }
 
 * {
@@ -73,7 +85,164 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Google-style cards */
+/* Сетка для карточек тестов - 3 колонки */
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+  .quiz-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .quiz-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Карточка теста */
+.quiz-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.quiz-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Группа кнопок в карточке */
+.quiz-card-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+/* Стили для всех кнопок - скругленные */
+button, .google-btn {
+  border-radius: 40px !important;
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Кнопка Просмотр */
+.btn-view {
+  background-color: var(--btn-primary);
+  color: var(--button-text);
+}
+
+.btn-view:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+/* Кнопка Пройти */
+.btn-take {
+  background-color: var(--btn-success);
+  color: var(--button-text);
+}
+
+.btn-take:hover {
+  background-color: var(--btn-success-hover);
+}
+
+/* Кнопка Редактировать */
+.btn-edit {
+  background-color: var(--btn-warning);
+  color: var(--button-text);
+}
+
+.btn-edit:hover {
+  background-color: var(--btn-warning-hover);
+}
+
+/* Кнопка Удалить */
+.btn-delete {
+  background-color: var(--btn-danger);
+  color: var(--button-text);
+}
+
+.btn-delete:hover {
+  background-color: var(--btn-danger-hover);
+}
+
+/* Кнопка Создать */
+.btn-create {
+  background-color: var(--btn-success);
+  color: var(--button-text);
+}
+
+.btn-create:hover {
+  background-color: var(--btn-success-hover);
+}
+
+/* Кнопка Отмена */
+.btn-cancel {
+  background-color: var(--btn-secondary);
+  color: var(--button-text);
+}
+
+.btn-cancel:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+/* Google-style кнопки для совместимости */
+.google-btn-primary {
+  background-color: var(--btn-primary);
+  color: var(--button-text);
+}
+
+.google-btn-primary:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.google-btn-secondary {
+  background-color: var(--btn-secondary);
+  color: var(--button-text);
+}
+
+.google-btn-secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+.google-btn-danger {
+  background-color: var(--btn-danger);
+  color: var(--button-text);
+}
+
+.google-btn-danger:hover {
+  background-color: var(--btn-danger-hover);
+}
+
+.google-btn-warning {
+  background-color: var(--btn-warning);
+  color: var(--button-text);
+}
+
+.google-btn-warning:hover {
+  background-color: var(--btn-warning-hover);
+}
+
 .google-card {
   background: var(--bg-primary);
   border-radius: 16px;
@@ -87,70 +256,11 @@ body {
   transform: translateY(-2px);
 }
 
-/* Google-style buttons */
-.google-btn {
-  padding: 10px 24px;
-  border-radius: 24px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.google-btn-primary {
-  background-color: var(--button-bg-primary);
-  color: var(--button-text);
-  border: none;
-}
-
-.google-btn-primary:hover {
-  background-color: var(--primary-hover);
-  transform: scale(1.02);
-  box-shadow: var(--shadow-sm);
-}
-
-.google-btn-secondary {
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.google-btn-secondary:hover {
-  background-color: var(--bg-hover);
-}
-
-.google-btn-danger {
-  background-color: var(--button-bg-danger);
-  color: var(--button-text);
-  border: none;
-}
-
-.google-btn-danger:hover {
-  opacity: 0.85;
-  transform: scale(1.02);
-}
-
-.google-btn-warning {
-  background-color: var(--button-bg-warning);
-  color: var(--button-text-warning);
-  border: none;
-}
-
-.google-btn-warning:hover {
-  opacity: 0.85;
-  transform: scale(1.02);
-}
-
-/* Google-style inputs */
 .google-input {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px !important;
   font-size: 16px;
   background-color: var(--input-bg);
   color: var(--text-primary);
@@ -161,148 +271,92 @@ body {
 .google-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
 }
 
-/* Google-style navbar */
 .google-navbar {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
-  background-color: rgba(var(--bg-primary), 0.95);
 }
 
-/* Animations */
+/* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { transform: translateX(-20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
 }
 
 .fade-in {
   animation: fadeIn 0.3s ease;
 }
 
-.slide-in {
-  animation: slideIn 0.3s ease;
-}
-
-/* Quiz card */
-.quiz-card {
-  background-color: var(--bg-card);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-light);
-}
-
-.quiz-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Tags */
+/* Теги */
 .tag {
   display: inline-block;
   background-color: var(--bg-hover);
   color: var(--text-secondary);
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: 20px;
   font-size: 12px;
   margin-right: 8px;
+  margin-bottom: 8px;
   transition: all 0.2s ease;
 }
 
 .tag:hover {
-  background-color: var(--primary-color);
+  background-color: var(--btn-primary);
   color: white;
 }
 
-/* Status badges */
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
+/* Статусы */
 .status-published {
-  background-color: rgba(24, 128, 56, 0.1);
-  color: var(--success-color);
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--btn-success);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: inline-block;
 }
 
 .status-draft {
-  background-color: rgba(242, 153, 0, 0.1);
-  color: var(--warning-color);
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--btn-warning);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: inline-block;
 }
 
-/* Dark theme specific overrides */
-[data-theme="dark"] .google-input {
-  background-color: #2d2e32;
-  border-color: #5f6368;
-  color: #e8eaed;
-}
-
-[data-theme="dark"] .google-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
-}
-
+/* Темная тема */
 [data-theme="dark"] .quiz-card {
-  background-color: #2d2e32;
-  border-color: #3c4043;
+  background-color: #252525;
+  border-color: #333333;
 }
 
 [data-theme="dark"] .tag {
-  background-color: #3c4043;
-  color: #9aa0a6;
+  background-color: #3a3a3a;
+  color: #b0b0b0;
 }
 
 [data-theme="dark"] .tag:hover {
-  background-color: var(--primary-color);
-  color: #202124;
+  background-color: var(--btn-primary);
+  color: #1a1a1a;
 }
 
-[data-theme="dark"] .google-card {
-  background-color: #2d2e32;
-  border-color: #3c4043;
+[data-theme="dark"] .status-published {
+  background-color: rgba(92, 124, 92, 0.2);
+  color: #8aaa8a;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .google-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .quiz-card {
-    padding: 12px;
-  }
-
-  .google-input {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
+[data-theme="dark"] .status-draft {
+  background-color: rgba(138, 124, 92, 0.2);
+  color: #caaa8a;
 }
 
-/* Gradient text for logo */
-.logo-text {
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Scrollbar styling */
+/* Скроллбар */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -320,108 +374,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
-}
-
-[data-theme="dark"] .quiz-card,
-[data-theme="dark"] .google-card,
-[data-theme="dark"] .stats-card,
-[data-theme="dark"] .results-card,
-[data-theme="dark"] .favorites-card {
-  background-color: #2a2a2a !important;
-  border: 1px solid #3a3a3a !important;
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .quiz-card h3,
-[data-theme="dark"] .quiz-card p,
-[data-theme="dark"] .quiz-card span,
-[data-theme="dark"] .google-card h3,
-[data-theme="dark"] .google-card p,
-[data-theme="dark"] .google-card span {
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .quiz-card .text-secondary,
-[data-theme="dark"] .google-card .text-secondary {
-  color: #a0a0a0 !important;
-}
-
-[data-theme="dark"] button.google-btn-primary {
-  background-color: #4a6a7a !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-[data-theme="dark"] button.google-btn-secondary {
-  background-color: #2a2a2a !important;
-  border: 1px solid #4a4a4a !important;
-  color: #e0e0e0 !important;
-}
-
-[data-theme="dark"] button.google-btn-danger {
-  background-color: #7a4a4a !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-[data-theme="dark"] button.google-btn-warning {
-  background-color: #7a6a4a !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-[data-theme="dark"] .google-input,
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select {
-  background-color: #333333 !important;
-  border: 1px solid #4a4a4a !important;
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .google-input:focus,
-[data-theme="dark"] input:focus,
-[data-theme="dark"] textarea:focus {
-  border-color: #6c8c9e !important;
-  box-shadow: 0 0 0 2px rgba(108, 140, 158, 0.3) !important;
-  outline: none !important;
-}
-
-[data-theme="dark"] .tag {
-  background-color: #3a3a3a !important;
-  color: #d0d0d0 !important;
-}
-
-[data-theme="dark"] .tag:hover {
-  background-color: #4a6a7a !important;
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .status-published {
-  background-color: rgba(129, 201, 149, 0.2) !important;
-  color: #81c995 !important;
-}
-
-[data-theme="dark"] .status-draft {
-  background-color: rgba(253, 214, 99, 0.2) !important;
-  color: #fdd663 !important;
-}
-
-[data-theme="dark"] table,
-[data-theme="dark"] table td,
-[data-theme="dark"] table th {
-  background-color: #2a2a2a !important;
-  color: #ffffff !important;
-  border-color: #3a3a3a !important;
-}
-
-[data-theme="dark"] table tr {
-  border-bottom-color: #3a3a3a !important;
-}
-
-[data-theme="dark"] .modal-content,
-[data-theme="dark"] .popup {
-  background-color: #2a2a2a !important;
-  color: #ffffff !important;
-  border: 1px solid #3a3a3a !important;
 }

@@ -18,7 +18,7 @@ const MyResults: React.FC<MyResultsProps> = ({ currentUserId }) => {
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto', padding: 20 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>📈 Мои результаты</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}> Мои результаты</h1>
 
       <div style={{
         backgroundColor: 'var(--bg-card)',
@@ -27,7 +27,7 @@ const MyResults: React.FC<MyResultsProps> = ({ currentUserId }) => {
         textAlign: 'center',
         border: '1px solid var(--border-color)'
       }}>
-        <div style={{ fontSize: 64, marginBottom: 20 }}>📊</div>
+        <div style={{ fontSize: 64, marginBottom: 20 }}></div>
         <h3 style={{ marginBottom: 12, fontSize: 24 }}>Функционал в разработке</h3>
         <p style={{ color: 'var(--text-secondary)', fontSize: 16 }}>
           Здесь будут отображаться результаты ваших пройденных тестов.<br />

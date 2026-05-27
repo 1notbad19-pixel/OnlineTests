@@ -184,9 +184,9 @@ const TakeQuiz: React.FC<TakeQuizProps> = ({ quizId, onFinish }) => {
         <p>Правильных ответов: {score.correct} из {score.total}</p>
         <p>Набранные баллы: {score.percentage}%</p>
         {score.percentage >= 70 ? (
-          <div style={{ color: 'var(--success-color)' }}>✅ Поздравляем! Тест пройден!</div>
+          <div style={{ color: 'var(--success-color)' }}> Поздравляем! Тест пройден!</div>
         ) : (
-          <div style={{ color: 'var(--error-color)' }}>❌ Тест не пройден. Попробуйте еще раз!</div>
+          <div style={{ color: 'var(--error-color)' }}> Тест не пройден. Попробуйте еще раз!</div>
         )}
         <button onClick={onFinish} className="google-btn-primary" style={{ marginTop: 30, padding: '10px 20px' }}>
           Закрыть

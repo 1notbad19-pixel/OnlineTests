@@ -63,7 +63,7 @@ const MyQuizzes: React.FC<MyQuizzesProps> = ({ onView, onEdit, currentUserId }) 
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 20 }}>
-      <h1>📝 Мои тесты</h1>
+      <h1> Мои тесты</h1>
       <p>Всего создано: {quizzes.length}</p>
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -124,9 +124,9 @@ const MyQuizzes: React.FC<MyQuizzesProps> = ({ onView, onEdit, currentUserId }) 
               <h3>{quiz.title}</h3>
               <p>{quiz.description}</p>
               <div style={{ display: 'flex', gap: 15, fontSize: 14, color: '#666', flexWrap: 'wrap' }}>
-                <span>📂 {quiz.category}</span>
-                <span>⏱️ {quiz.timeLimitMinutes} мин</span>
-                <span>📝 {quiz.questionCount} вопросов</span>
+                <span> {quiz.category}</span>
+                <span> {quiz.timeLimitMinutes} мин</span>
+                <span> {quiz.questionCount} вопросов</span>
                 <span style={{
                   backgroundColor: quiz.isPublished ? '#d4edda' : '#fff3cd',
                   color: quiz.isPublished ? '#155724' : '#856404',
@@ -134,7 +134,7 @@ const MyQuizzes: React.FC<MyQuizzesProps> = ({ onView, onEdit, currentUserId }) 
                   borderRadius: 12,
                   fontSize: 12
                 }}>
-                  {quiz.isPublished ? '✅ Опубликован' : ' Черновик'}
+                  {quiz.isPublished ? ' Опубликован' : ' Черновик'}
                 </span>
               </div>
               <div style={{ marginTop: 10 }}>
