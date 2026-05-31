@@ -16,7 +16,6 @@ buildNumber.properties
 *.log
 logs/
 
-### IntelliJ IDEA ###
 .idea/
 *.iws
 *.iml
@@ -25,7 +24,6 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -37,7 +35,6 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -47,27 +44,21 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
 .vscode/
 
-### Java ###
 *.class
 
-### OS ###
 .DS_Store
 Thumbs.db
 desktop.ini
 
-### Spring Boot ###
 HELP.md
 application-*.properties
 application-*.yml
 .env
 
-### Kotlin ###
 .kotlin/
 
-### Checkstyle ###
 checkstyle.xml
 checkstyle-suppressions.xml
 target/checkstyle*.xml

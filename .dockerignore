@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+.env
+.dockerignore
+node_modules
+target
+*.log
+.DS_Store
+.idea
+.vscode
+*.iml
+test
