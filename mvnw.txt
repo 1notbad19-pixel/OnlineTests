@@ -1,4 +1,7 @@
 #!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Wrapper Startup Script
+# ----------------------------------------------------------------------------
 
 MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-$(pwd)}
 MAVEN_BINARY=".mvn/wrapper/maven-wrapper.jar"
