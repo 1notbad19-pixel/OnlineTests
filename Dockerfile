@@ -1,3 +1,4 @@
+# Этап 1: Сборка бэкенда
 FROM maven:3.9-eclipse-temurin-17 AS backend-builder
 
 WORKDIR /app
@@ -8,6 +9,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -Dmaven.test.skip=true -B
 
+# Этап 2: Сборка фронтенда
 FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
@@ -18,13 +20,18 @@ RUN npm install --legacy-peer-deps
 COPY quiz-client ./
 RUN npm run build
 
+# Этап 3: Финальный образ
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+# Копируем бэкенд
 COPY --from=backend-builder /app/target/*.jar app.jar
+
+# Копируем фронтенд
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 
+# Устанавливаем Nginx
 RUN apk add --no-cache nginx && \
     echo 'server { \
         listen 3000; \

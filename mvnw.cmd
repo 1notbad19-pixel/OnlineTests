@@ -1,4 +1,6 @@
 @echo off
 setlocal
-set MAVEN_OPTS=-Xmx256m
-java -jar "%~dp0\.mvn\wrapper\maven-wrapper.jar" %*
+set MAVEN_PROJECTBASEDIR=%CD%
+set MAVEN_BINARY=.mvn\wrapper\maven-wrapper.jar
+
+java -jar "%MAVEN_PROJECTBASEDIR%\%MAVEN_BINARY%" %*
