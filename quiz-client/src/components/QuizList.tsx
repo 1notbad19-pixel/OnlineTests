@@ -118,7 +118,7 @@ const QuizList: React.FC<QuizListProps> = ({
       {/* Заголовок и кнопка создания в одной строке */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>📋 Все тесты</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}> Все тесты</h1>
           <p style={{ color: 'var(--text-secondary)' }}>
             Найдено тестов: <strong style={{ color: 'var(--primary-color)' }}>{filteredQuizzes.length}</strong> из {quizzes.length}
           </p>
@@ -133,7 +133,7 @@ const QuizList: React.FC<QuizListProps> = ({
       {/* Блок статистики */}
       {popularCategories.length > 0 && (
         <div className="google-card" style={{ padding: 16, marginBottom: 20 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 10, color: 'var(--text-secondary)' }}>📊 Популярные категории</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 10, color: 'var(--text-secondary)' }}> Популярные категории</h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {popularCategories.map(([cat, count]) => (
               <button
@@ -169,7 +169,7 @@ const QuizList: React.FC<QuizListProps> = ({
         <div style={{ flex: 1 }}>
           <input
             type="text"
-            placeholder="🔍 Поиск тестов..."
+            placeholder=" Поиск тестов..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="google-input"
@@ -189,7 +189,7 @@ const QuizList: React.FC<QuizListProps> = ({
 
       {filteredQuizzes.length === 0 && (
         <div className="google-card" style={{ textAlign: 'center', padding: 60 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+          <div style={{ fontSize: 48, marginBottom: 16 }}></div>
           <h3>Ничего не найдено</h3>
           <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Попробуйте изменить параметры поиска или фильтрации</p>
           <button onClick={() => { setSearchTerm(''); setCategoryFilter(''); }} className="google-btn-primary" style={{ marginTop: 20, padding: '8px 24px' }}>
@@ -234,14 +234,14 @@ const QuizList: React.FC<QuizListProps> = ({
                   borderRadius: 12,
                   border: '1px solid var(--border-light)'
                 }}>
-                  <span>📂 {quiz.category}</span>
-                  <span>⏱️ {quiz.timeLimitMinutes} мин</span>
-                  <span>📝 {quiz.questionCount} вопросов</span>
+                  <span> {quiz.category}</span>
+                  <span> {quiz.timeLimitMinutes} мин</span>
+                  <span> {quiz.questionCount} вопросов</span>
                 </div>
 
                 <div style={{ marginBottom: 12 }}>
                   <span className={quiz.isPublished ? 'status-published' : 'status-draft'}>
-                    {quiz.isPublished ? '✅ Опубликован' : '📝 Черновик'}
+                    {quiz.isPublished ? ' Опубликован' : ' Черновик'}
                   </span>
                 </div>
 
