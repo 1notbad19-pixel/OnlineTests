@@ -11,6 +11,7 @@ interface Quiz {
   isPublished: boolean;
   tags: string[];
   questionCount: number;
+  createdByUsername?: string;
 }
 
 interface QuizListProps {
@@ -20,6 +21,7 @@ interface QuizListProps {
   onTakeQuiz?: (id: number) => void;
   onAddToFavorites?: (id: number) => void;
   favorites?: number[];
+  onCreateQuiz?: () => void;
 }
 
 const QuizList: React.FC<QuizListProps> = ({
@@ -28,7 +30,8 @@ const QuizList: React.FC<QuizListProps> = ({
   onDelete,
   onTakeQuiz,
   onAddToFavorites,
-  favorites = []
+  favorites = [],
+  onCreateQuiz
 }) => {
   const { theme } = useTheme();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -80,6 +83,16 @@ const QuizList: React.FC<QuizListProps> = ({
     setDeleteTarget(null);
   };
 
+  // Статистика по категориям
+  const categoryStats = quizzes.reduce((acc, quiz) => {
+    acc[quiz.category] = (acc[quiz.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const popularCategories = Object.entries(categoryStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           quiz.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -102,23 +115,72 @@ const QuizList: React.FC<QuizListProps> = ({
         onCancel={handleCancelDelete}
       />
 
-      <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}> Все тесты</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>Исследуйте тесты от всех пользователей</p>
+      {/* Заголовок и кнопка создания в одной строке */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>📋 Все тесты</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            Найдено тестов: <strong style={{ color: 'var(--primary-color)' }}>{filteredQuizzes.length}</strong> из {quizzes.length}
+          </p>
+        </div>
+        {onCreateQuiz && (
+          <button onClick={onCreateQuiz} className="google-btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+            + Создать тест
+          </button>
+        )}
+      </div>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 30, flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="Поиск тестов..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="google-input"
-          style={{ flex: 1, minWidth: 200 }}
-        />
+      {/* Блок статистики */}
+      {popularCategories.length > 0 && (
+        <div className="google-card" style={{ padding: 16, marginBottom: 20 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 10, color: 'var(--text-secondary)' }}>📊 Популярные категории</h3>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {popularCategories.map(([cat, count]) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 20,
+                  backgroundColor: categoryFilter === cat ? 'var(--btn-primary)' : 'var(--bg-hover)',
+                  color: categoryFilter === cat ? 'white' : 'var(--text-primary)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 12
+                }}
+              >
+                {cat} ({count})
+              </button>
+            ))}
+            {categoryFilter && (
+              <button
+                onClick={() => setCategoryFilter('')}
+                style={{ padding: '5px 12px', borderRadius: 20, backgroundColor: 'var(--btn-secondary)', color: 'white', border: 'none', cursor: 'pointer', fontSize: 12 }}
+              >
+                Сбросить ✕
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Поиск и фильтры */}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1 }}>
+          <input
+            type="text"
+            placeholder="🔍 Поиск тестов..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="google-input"
+            style={{ width: '100%' }}
+          />
+        </div>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="google-input"
-          style={{ width: 180 }}
+          style={{ width: 160 }}
         >
           <option value="">Все категории</option>
           {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -126,17 +188,23 @@ const QuizList: React.FC<QuizListProps> = ({
       </div>
 
       {filteredQuizzes.length === 0 && (
-        <div className="google-card" style={{ textAlign: 'center', padding: 50 }}>
-          <p>Тесты не найдены</p>
+        <div className="google-card" style={{ textAlign: 'center', padding: 60 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+          <h3>Ничего не найдено</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>Попробуйте изменить параметры поиска или фильтрации</p>
+          <button onClick={() => { setSearchTerm(''); setCategoryFilter(''); }} className="google-btn-primary" style={{ marginTop: 20, padding: '8px 24px' }}>
+            Сбросить фильтры
+          </button>
         </div>
       )}
 
+      {/* Сетка тестов */}
       <div className="quiz-grid">
         {filteredQuizzes.map((quiz) => {
           const isFavorite = favorites.includes(quiz.id);
 
           return (
-            <div key={quiz.id} className="quiz-card">
+            <div key={quiz.id} className="quiz-card" style={{ display: 'flex', flexDirection: 'column', minHeight: 340 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{quiz.title}</h3>
@@ -151,7 +219,7 @@ const QuizList: React.FC<QuizListProps> = ({
                 </div>
 
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: 14, lineHeight: 1.4 }}>
-                  {quiz.description?.length > 100 ? quiz.description.substring(0, 100) + '...' : quiz.description}
+                  {quiz.description?.length > 100 ? quiz.description.substring(0, 100) + '...' : quiz.description || 'Нет описания'}
                 </p>
 
                 <div style={{
@@ -166,14 +234,14 @@ const QuizList: React.FC<QuizListProps> = ({
                   borderRadius: 12,
                   border: '1px solid var(--border-light)'
                 }}>
-                  <span> {quiz.category}</span>
-                  <span> {quiz.timeLimitMinutes} мин</span>
-                  <span> {quiz.questionCount} вопросов</span>
+                  <span>📂 {quiz.category}</span>
+                  <span>⏱️ {quiz.timeLimitMinutes} мин</span>
+                  <span>📝 {quiz.questionCount} вопросов</span>
                 </div>
 
                 <div style={{ marginBottom: 12 }}>
                   <span className={quiz.isPublished ? 'status-published' : 'status-draft'}>
-                    {quiz.isPublished ? ' Опубликован' : ' Черновик'}
+                    {quiz.isPublished ? '✅ Опубликован' : '📝 Черновик'}
                   </span>
                 </div>
 
@@ -181,9 +249,15 @@ const QuizList: React.FC<QuizListProps> = ({
                   {quiz.tags?.slice(0, 3).map(tag => <span key={tag} className="tag">#{tag}</span>)}
                   {quiz.tags?.length > 3 && <span className="tag">+{quiz.tags.length - 3}</span>}
                 </div>
+
+                {quiz.createdByUsername && (
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8 }}>
+                    👤 {quiz.createdByUsername}
+                  </div>
+                )}
               </div>
 
-              <div className="quiz-card-buttons">
+              <div className="quiz-card-buttons" style={{ marginTop: 16 }}>
                 <button onClick={() => onView(quiz.id)} className="btn-view" style={{ padding: '8px 16px', fontSize: '13px' }}>
                   Просмотр
                 </button>
@@ -203,6 +277,12 @@ const QuizList: React.FC<QuizListProps> = ({
           );
         })}
       </div>
+
+      {filteredQuizzes.length > 0 && (
+        <div style={{ textAlign: 'center', marginTop: 32, color: 'var(--text-secondary)', fontSize: 13 }}>
+          Показано {filteredQuizzes.length} из {quizzes.length} тестов
+        </div>
+      )}
     </div>
   );
 };

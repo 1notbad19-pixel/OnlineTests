@@ -153,7 +153,7 @@ function App() {
       <nav className="google-navbar">
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ margin: 0, cursor: 'pointer', fontSize: 22, fontWeight: 500 }} onClick={() => setCurrentView('list')}>
-             Online Tests
+            Online Tests
           </h2>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -180,9 +180,6 @@ function App() {
             </button>
             <button onClick={() => setCurrentView('profile')} className="google-btn-secondary" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               👤 {user?.username}
-            </button>
-            <button onClick={() => setCurrentView('create')} className="google-btn-primary" style={{ padding: '8px 20px' }}>
-              + Создать
             </button>
             <button onClick={handleLogout} className="google-btn-danger" style={{ padding: '8px 16px' }}>
               Выйти
