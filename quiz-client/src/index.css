@@ -16,11 +16,25 @@
 
   --border-color: #dadce0;
   --border-light: #e8eaed;
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-xl: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  --input-bg: #ffffff;
+  --input-border: #dadce0;
+  --button-text: #ffffff;
 
-  --btn-primary: #1a73e8;
-  --btn-primary-hover: #1557b0;
-  --btn-secondary: #5f6368;
-  --btn-secondary-hover: #4a4f55;
+  /* Приглушенные цвета для кнопок */
+  --btn-primary: #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-success: #22c55e;
+  --btn-success-hover: #16a34a;
+  --btn-warning: #eab308;
+  --btn-warning-hover: #ca8a04;
+  --btn-danger: #ef4444;
+  --btn-danger-hover: #dc2626;
+  --btn-secondary: #6b7280;
+  --btn-secondary-hover: #4b5563;
 }
 
 [data-theme="dark"] {
@@ -41,9 +55,19 @@
 
   --border-color: #3a3a3a;
   --border-light: #333333;
+  --input-bg: #2a2a2a;
+  --input-border: #444444;
+  --button-text: #e8eaed;
 
+  /* Приглушенные цвета для кнопок в темной теме */
   --btn-primary: #5c7c8e;
   --btn-primary-hover: #6a8a9a;
+  --btn-success: #5c7c5c;
+  --btn-success-hover: #6a8a6a;
+  --btn-warning: #8a7c5c;
+  --btn-warning-hover: #9a8a6a;
+  --btn-danger: #8a5c5c;
+  --btn-danger-hover: #9a6a6a;
   --btn-secondary: #5a5a6a;
   --btn-secondary-hover: #6a6a7a;
 }
@@ -109,7 +133,7 @@ body {
 /* Стили для всех кнопок */
 button, .google-btn {
   border-radius: 40px !important;
-  padding: 8px 20px;
+  padding: 8px 16px;
   font-weight: 500;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -122,7 +146,7 @@ button:hover {
   transform: translateY(-1px);
 }
 
-/* Кнопка Просмотр - синяя */
+/* Кнопка Просмотр, Пройти, Редактировать - синие */
 .btn-view {
   background-color: var(--btn-primary);
   color: white;
@@ -132,39 +156,19 @@ button:hover {
   background-color: var(--btn-primary-hover);
 }
 
-/* Кнопка Пройти - синяя */
-.btn-take {
-  background-color: var(--btn-primary);
-  color: white;
-}
-
-.btn-take:hover {
-  background-color: var(--btn-primary-hover);
-}
-
-/* Кнопка Редактировать - синяя */
-.btn-edit {
-  background-color: var(--btn-primary);
-  color: white;
-}
-
-.btn-edit:hover {
-  background-color: var(--btn-primary-hover);
-}
-
 /* Кнопка Удалить - красная */
 .btn-delete {
-  background-color: #dc3545;
+  background-color: var(--btn-danger);
   color: white;
 }
 
 .btn-delete:hover {
-  background-color: #c82333;
+  background-color: var(--btn-danger-hover);
 }
 
-/* Кнопка Создать тест - большая, зеленая */
+/* Кнопка Создать тест */
 .btn-create-large {
-  background-color: #28a745;
+  background-color: var(--btn-success);
   color: white;
   padding: 12px 28px;
   font-size: 16px;
@@ -172,8 +176,7 @@ button:hover {
 }
 
 .btn-create-large:hover {
-  background-color: #218838;
-  transform: translateY(-2px);
+  background-color: var(--btn-success-hover);
 }
 
 /* Кнопка Отмена */
@@ -186,39 +189,56 @@ button:hover {
   background-color: var(--btn-secondary-hover);
 }
 
-/* Кнопка в навигации */
-.nav-btn {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 4px;
+/* Google-style кнопки для совместимости */
+.google-btn-primary {
+  background-color: var(--btn-primary);
+  color: var(--button-text);
 }
 
-.nav-btn-active {
-  background-color: #007bff;
+.google-btn-primary:hover {
+  background-color: var(--btn-primary-hover);
 }
 
-.nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.google-btn-secondary {
+  background-color: var(--btn-secondary);
+  color: var(--button-text);
 }
 
-/* Google-card */
+.google-btn-secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+.google-btn-danger {
+  background-color: var(--btn-danger);
+  color: var(--button-text);
+}
+
+.google-btn-danger:hover {
+  background-color: var(--btn-danger-hover);
+}
+
+.google-btn-warning {
+  background-color: var(--btn-warning);
+  color: var(--button-text);
+}
+
+.google-btn-warning:hover {
+  background-color: var(--btn-warning-hover);
+}
+
 .google-card {
   background: var(--bg-primary);
   border-radius: 16px;
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
   border: 1px solid var(--border-light);
 }
 
 .google-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
-/* Google-input */
 .google-input {
   width: 100%;
   padding: 12px 16px;
@@ -234,7 +254,26 @@ button:hover {
 .google-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+}
+
+.google-navbar {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease;
 }
 
 /* Теги */
@@ -257,8 +296,8 @@ button:hover {
 
 /* Статусы */
 .status-published {
-  background-color: rgba(24, 128, 56, 0.15);
-  color: #188038;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--btn-success);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -266,24 +305,15 @@ button:hover {
 }
 
 .status-draft {
-  background-color: rgba(242, 153, 0, 0.15);
-  color: #f29900;
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--btn-warning);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   display: inline-block;
 }
 
-[data-theme="dark"] .status-published {
-  background-color: rgba(81, 201, 149, 0.2);
-  color: #81c995;
-}
-
-[data-theme="dark"] .status-draft {
-  background-color: rgba(253, 214, 99, 0.2);
-  color: #fdd663;
-}
-
+/* Темная тема */
 [data-theme="dark"] .quiz-card {
   background-color: #252525;
   border-color: #333333;
@@ -297,4 +327,34 @@ button:hover {
 [data-theme="dark"] .tag:hover {
   background-color: var(--btn-primary);
   color: #1a1a1a;
+}
+
+[data-theme="dark"] .status-published {
+  background-color: rgba(92, 124, 92, 0.2);
+  color: #8aaa8a;
+}
+
+[data-theme="dark"] .status-draft {
+  background-color: rgba(138, 124, 92, 0.2);
+  color: #caaa8a;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-hover);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }

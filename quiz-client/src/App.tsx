@@ -195,7 +195,9 @@ function App() {
           onDelete={handleDelete}
           onTakeQuiz={handleTakeQuiz}
           onAddToFavorites={handleAddToFavorites}
+          onCreateQuiz={() => setCurrentView('create')}
           favorites={favorites}
+          currentUserId={user?.id}
         />
       )}
       {currentView === 'favorites' && (

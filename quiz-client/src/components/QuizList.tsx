@@ -11,6 +11,7 @@ interface Quiz {
   isPublished: boolean;
   tags: string[];
   questionCount: number;
+  createdById?: number;
   createdByUsername?: string;
 }
 
@@ -20,8 +21,9 @@ interface QuizListProps {
   onDelete: (id: number) => void;
   onTakeQuiz?: (id: number) => void;
   onAddToFavorites?: (id: number) => void;
-  favorites?: number[];
   onCreateQuiz?: () => void;
+  favorites?: number[];
+  currentUserId?: number;
 }
 
 const QuizList: React.FC<QuizListProps> = ({
@@ -30,8 +32,9 @@ const QuizList: React.FC<QuizListProps> = ({
   onDelete,
   onTakeQuiz,
   onAddToFavorites,
+  onCreateQuiz,
   favorites = [],
-  onCreateQuiz
+  currentUserId
 }) => {
   const { theme } = useTheme();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -43,7 +46,7 @@ const QuizList: React.FC<QuizListProps> = ({
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
 
   const loadQuizzes = () => {
-    fetch('http://localhost:8080/api/quizzes')
+    fetch('https://onlinetests-production.up.railway.app/api/quizzes')
       .then(res => res.json())
       .then(data => {
         setQuizzes(data);
@@ -67,7 +70,7 @@ const QuizList: React.FC<QuizListProps> = ({
   const handleConfirmDelete = async () => {
     if (deleteTarget) {
       try {
-        await fetch(`http://localhost:8080/api/quizzes/${deleteTarget.id}`, { method: 'DELETE' });
+        await fetch(`https://onlinetests-production.up.railway.app/api/quizzes/${deleteTarget.id}`, { method: 'DELETE' });
         onDelete(deleteTarget.id);
         loadQuizzes();
       } catch (error) {
@@ -201,6 +204,7 @@ const QuizList: React.FC<QuizListProps> = ({
       {/* Сетка тестов */}
       <div className="quiz-grid">
         {filteredQuizzes.map((quiz) => {
+          const isCreator = currentUserId && quiz.createdById === currentUserId;
           const isFavorite = favorites.includes(quiz.id);
 
           return (
@@ -262,16 +266,20 @@ const QuizList: React.FC<QuizListProps> = ({
                   Просмотр
                 </button>
                 {onTakeQuiz && (
-                  <button onClick={() => onTakeQuiz(quiz.id)} className="btn-take" style={{ padding: '8px 16px', fontSize: '13px' }}>
+                  <button onClick={() => onTakeQuiz(quiz.id)} className="btn-view" style={{ padding: '8px 16px', fontSize: '13px' }}>
                     Пройти
                   </button>
                 )}
-                <button onClick={() => onEdit(quiz.id)} className="btn-edit" style={{ padding: '8px 16px', fontSize: '13px' }}>
-                  Редактировать
-                </button>
-                <button onClick={() => handleDeleteClick(quiz.id, quiz.title)} className="btn-delete" style={{ padding: '8px 16px', fontSize: '13px' }}>
-                  Удалить
-                </button>
+                {isCreator && (
+                  <>
+                    <button onClick={() => onEdit(quiz.id)} className="btn-view" style={{ padding: '8px 16px', fontSize: '13px' }}>
+                      Редактировать
+                    </button>
+                    <button onClick={() => handleDeleteClick(quiz.id, quiz.title)} className="btn-delete" style={{ padding: '8px 16px', fontSize: '13px' }}>
+                      Удалить
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           );
